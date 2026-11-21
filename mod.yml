@@ -1,0 +1,44 @@
+title: KHRECOM Randomizer Core
+originalAuthor: Gicu
+description: RE:Chain of Memories Archipelago Randomizer Mod.  Requires KHRECOM-LUA-LIBRARY.
+assets:
+- name: scripts/io_packages/recom_client_files.lua
+  method: copy
+  source:
+  - name: mod/scripts/io_packages/recom_client_files.lua
+- name: scripts/io_packages/recom_locations.lua
+  method: copy
+  source:
+  - name: mod/scripts/io_packages/recom_locations.lua
+- name: scripts/io_packages/recom_seed_vars.lua
+  method: copy
+  source:
+  - name: mod/scripts/io_packages/recom_seed_vars.lua
+- name: scripts/io_packages/recom_settings.lua
+  method: copy
+  source:
+  - name: mod/scripts/io_packages/recom_settings.lua
+- name: scripts/recomRandoConnector.lua
+  method: copy
+  source:
+  - name: mod/scripts/recomRandoConnector.lua
+- name: scripts/recomRandoDeathLink.lua
+  method: copy
+  source:
+  - name: mod/scripts/recomRandoDeathLink.lua
+- name: scripts/recomRandoEnableDaysLocations.lua
+  method: copy
+  source:
+  - name: mod/scripts/recomRandoEnableDaysLocations.lua
+- name: scripts/recomRandoExitHallEvents.lua
+  method: copy
+  source:
+  - name: mod/scripts/recomRandoExitHallEvents.lua
+- name: scripts/recomRandoEXPMultiplier.lua
+  method: copy
+  source:
+  - name: mod/scripts/recomRandoEXPMultiplier.lua
+- name: scripts/recomRandoGameSettings.lua
+  method: copy
+  source:
+  - name: mod/scripts/recomRandoGameSettings.lua
