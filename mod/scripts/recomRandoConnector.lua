@@ -103,6 +103,17 @@ local function choose_world_select_choices(floor_number, is_sora_story, vanilla_
     return {world_id}, locked
 end
 
+local function choose_warp_menu_world(floor_number)
+    local world_id = floor_worlds[floor_number]
+    if world_id == nil then
+        return nil
+    end
+    if not is_world_unlocked(world_id) then
+        return nil
+    end
+    return world_id
+end
+
 local function add_card_set(card_index, sets_received_for_card)
     local set_number = ((sets_received_for_card - 1) % #card_sets) + 1
     for _, card_value in ipairs(card_sets[set_number]) do
@@ -379,6 +390,10 @@ function _OnInit()
             local installed = khrecom.set_world_select_handler(choose_world_select_choices)
             if not installed then
                 ConsolePrint("Could not hook the world select screen, floors will offer their vanilla worlds")
+            end
+            local warp_installed = khrecom.allow_warp_to_unassigned_floors(choose_warp_menu_world)
+            if not warp_installed then
+                ConsolePrint("Could not patch the floor warp menu, floors without a world cannot be warped to")
             end
         end
     else
