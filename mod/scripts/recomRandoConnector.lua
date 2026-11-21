@@ -99,10 +99,8 @@ local function choose_world_select_choices(floor_number, is_sora_story, vanilla_
     if world_id == nil then
         return nil
     end
-    if is_world_unlocked(world_id) then
-        return {world_id}
-    end
-    return {}
+    local locked = not is_world_unlocked(world_id)
+    return {world_id}, locked
 end
 
 local function add_card_set(card_index, sets_received_for_card)
