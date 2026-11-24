@@ -24,14 +24,17 @@ pass through files in `%LOCALAPPDATA%\KHRECOM\` shared with the KHRECOM Archipel
   | `recomRandoEXPMultiplier.lua` | Applies the EXP multiplier to the EXP gem table. |
   | `recomRandoDeathLink.lua` | Sends a death when Sora's HP hits 0 and knocks Sora out when a death is received. |
   | `recomRandoEnableDaysLocations.lua` | Marks 358/2 Days as watched so its locations are reachable. |
+| `recomRandoLevers.lua` | Applies a lever seed (`levers.json`) from the seed generator: world groups, story doors, enemy stats and decks, boss rewards, Room of Rewards and bounty chests, chest and object card lists, level-up sleights, card CP, Moogle fallback cards and card drops. |
 - `mod/scripts/io_packages/*`
 
   | File | Description |
   | :--- | :---------- |
   | `recom_seed_vars.lua` | Loads the seed mod's JSON files from `io_packages/json/`. |
-  | `recom_settings.lua` | Reads values out of `settings.json`, with vanilla defaults when there is no seed. |
+  | `recom_settings.lua` | Reads values out of `settings.json`, with vanilla defaults when there is no seed, and hands `levers.json` to the levers script. |
   | `recom_client_files.lua` | Reads and writes the files shared with the Archipelago client. |
   | `recom_locations.lua` | Location ID tables for every check the connector sends. |
+- `seed_generator/index.html`
+  - The seed generator page. Open it in a browser; it builds a lever seed mod as a zip with no server and no downloads.
 - `build.py` / `generate_mod_yml.py`
   - Regenerate `mod.yml` from the files under `mod/`.
 
@@ -56,7 +59,99 @@ The seed mod installs `scripts/io_packages/json/settings.json`:
 | `attack_power` | Sora's attack power (vanilla 10). |
 | `exp_multiplier` | EXP multiplier. |
 
-Without a seed mod the scripts use vanilla floors, one card set of values 0-9, attack power 10 and no EXP change.
+Without `settings.json` the Archipelago scripts do not run (each prints "No Archipelago seed settings" once).
+
+## Lever seeds (seed generator)
+
+`seed_generator/index.html` builds a seed mod from a seed and a page of settings. The same seed and settings always
+build the same zip. The zip holds `mod.yml`, `levers.json` (installed to `scripts/io_packages/json/levers.json`) and
+`spoiler_log.txt`. Install it in OpenKH as its own mod, next to KHRECOM-LUA-LIBRARY and this mod.
+
+With only a lever seed installed (no `settings.json`), the Archipelago scripts (connector, Exit Hall events, game
+settings, EXP multiplier, DeathLink, Days) do not run, so the game plays as vanilla with the levers applied. An
+Archipelago seed and a lever seed can be installed together.
+
+How the page builds a seed:
+- Enemy drops, bounties, Rooms of Rewards, boss rewards and story rewards each add their cards to one **card pool**; bounties,
+  Rooms of Rewards, boss rewards (the sleights that come with a first card), level-ups, friends and story rewards add theirs to
+  one **sleight pool**. Each pool is then shuffled over the places it came from. A setting on No keeps its places vanilla.
+- Randomized bosses bring their own reward with them, also into the card pool.
+- The levers script always marks 358/2 Days as watched and removes the cleared-game check from the four bounties that have one,
+  so every bounty and every Room of Rewards chest can be reached and is in the pool.
+- Card values can be limited to some values or given weights. This sets the chest, Heartless and Moogle value weights, moves boss
+  rewards, story cards and the starting deck to allowed values, and can include enemy map cards. Friend cards and the fallback
+  for 99 copies of a card are not changed.
+- The starting deck has 13 cards, at least one attack card, and stays under 275 CP with the seed's own card CP.
+
+Every key is optional; a missing key keeps the game's data.
+
+```json
+{
+  "version": 1,
+  "seed": "12345",
+  "world_select": {"floors_2_to_6": [7, 2, 3, 9, 8], "floors_7_to_10": [5, 10, 6, 4]},
+  "story_doors_key_only": true,
+  "enemy_hp_multiplier": 1.5,
+  "enemy_attack_multiplier": 2,
+  "enemy_exp_multiplier": 1,
+  "enemy_decks": [{"kind": 1, "counts": [0, 0, 0, 1, 0, 0, 0, 0, 0, 0]}],
+  "boss_rewards": [{"record": 5, "card": 3, "value": 7}],
+  "room_of_rewards": [{"world": 1, "chest": 1, "card": 7}, {"world": 2, "chest": 1, "sleight": 37}],
+  "bounties": [{"world": 3, "chest": 1, "sleight": 28}],
+  "level_up_sleights": [{"slot": 1, "level": 2, "sleight": 4}],
+  "card_cp": [{"card": 1, "cp": 12}],
+  "moogle_fallback_cards": [{"category": 1, "card": 3}],
+  "world_order": [8, 1, 12, 5, 11, 3, 2, 9, 10, 4, 7, 6, 13],
+  "floor_layout_order": [7, 1, 12, 4, 11, 2, 6, 9, 10, 3, 8, 5],
+  "floor_layouts": [{"floor": 1, "width": 3, "depth": 5, "rooms": [{"id": 1, "x": 0, "y": 0, "doors": [{"destination": 2, "type": 0, "check_event": 0}]}]}],
+  "enemy_swaps": [{"world": 3, "swaps": [{"from": 1, "to": 18}]}],
+  "heartless_first_drop": true,
+  "heartless_rewards": [{"heartless": 68, "card": 22}],
+  "drops_ignore_unlocks": true,
+  "card_odds": [{"world": 3, "chest_cards": [{"card": 8, "weight": 100}], "object_cards": [{"card": 1, "weight": 100}], "map_cards": [{"card": 184, "weight": 100}], "random_joker_rate": 4, "key_to_rewards_rate": 15}],
+  "world_drops": [{"world": 3, "chest_cards": [{"card": 8, "weight": 10}], "object_cards": [{"card": 1, "weight": 25}]}],
+  "chest_card_value_weights": [2, 11, 13, 12, 12, 11, 6, 12, 14, 7],
+  "object_card_chance": 40,
+  "object_card_room_cap": 3
+}
+```
+
+| Key | Library function | Contents |
+| :-- | :--------------- | :------- |
+| `world_select` | `set_world_select_card` | The worlds Sora's world-select screen offers on floors 2-6 (5) and 7-10 (4). Floor 1 and floors 11-13 are not changed. |
+| `story_doors_key_only` | `set_story_doors_key_only` | Every story door needs only its key card. |
+| `enemy_hp_multiplier`, `enemy_attack_multiplier`, `enemy_exp_multiplier` | `set_enemy_*_multiplier` | Every enemy, every floor (0-100). |
+| `enemy_decks` | `set_enemy_deck` | Per enemy kind (`ENEMY/00kk` number), how many cards of each value 0-9. |
+| `boss_rewards` | `set_boss_reward` | Boss reward record (1-27, table order), card ID and value. |
+| `room_of_rewards`, `bounties` | `set_room_of_rewards_reward`, `set_bounty_reward` | World, chest number and either `card` or `sleight`. A sleight chest can only hold a sleight. |
+| `card_sleights` | `set_card_sleight` | The sleights that come with the first copy of a magic or summon card (`number` 1 or 2). |
+| `event_sleights` | `set_event_sleight_reward` | A sleight given by a story or minigame script. |
+| `level_up_sleights` | `set_level_up_sleight` | Level-up slot (1-12), level and sleight ID. |
+| `card_cp` | `set_card_cp` | Base CP per card ID. |
+| `moogle_fallback_cards` | `set_moogle_fallback_card` | Category 1 attack, 2 magic, 3 item, and the card a pack falls back to. |
+| `world_order` | `set_world_order` | The world of floors 1-13. Use it instead of `world_select`, not with it. |
+| `floor_layout_order` | `set_floor_layout_order` | Which of the game's layouts (1-12) each of floors 1-12 uses. |
+| `floor_layouts` | `set_floor_size`, `set_floor_room`, `set_floor_door` | New room positions and doors per floor. Every room is listed with its 4 doors (north, east, south, west). |
+| `enemy_swaps` | `set_world_enemy_swaps` | Per world, which Heartless kind replaces which, on the field and in battles. |
+| `card_powers` | `set_card_power` | The 4 powers of a card, percent of attack (attack cards: strike, thrust, finisher, 0). |
+| `sleight_powers` | `set_sleight_power` | The 4 powers of a sleight. |
+| `starting_deck` | `set_starting_deck` | The 13 cards of Sora's new game deck (`{card, value}`). |
+| `boss_fights` | `set_boss_fight` | Which boss (`kind`, `variant`) is in which arena (`world` 0 is the Exit Hall). |
+| `enemy_kind_stats` | `set_enemy_kind_multipliers` | HP, attack and EXP multipliers of one enemy kind. |
+| `moogle_pools`, `moogle_any_card` | `set_moogle_pool`, `set_moogle_any_card` | Moogle pack odds per category (1 attack, 2 magic, 3 item), and whether cards that were never found can be sold. |
+| `event_cards` | `set_event_card_reward` | A card given by a story script. |
+| `heartless_first_drop` | `set_heartless_first_drop_guaranteed` | `true` makes each Heartless always drop its card until you have picked one up from it. |
+| `heartless_rewards` | `set_heartless_reward` | The Heartless (its own enemy card id) and the card it drops instead. The generator's reward pool shuffles these with the card chests in `room_of_rewards` and `bounties`, and with `boss_rewards`. |
+| `drops_ignore_unlocks` | `set_drops_ignore_unlocks` | `true` lets chests and objects drop cards the player has never received. |
+| `card_odds` | `set_world_card_odds` | Per world, the percent chance of each card (`{card, weight}`, each list adds up to 100, any length). `chest_cards` and `object_cards` go together; `map_cards` with `random_joker_rate` and `key_to_rewards_rate` can be there on their own. The generator writes it when a list is set to "Random cards and odds" or "My own odds", and then leaves the card lists out of `world_drops`. |
+| `world_drops` | `set_world_drops` | Per world, the full `chest_cards` and `object_cards` lists (`{card, weight}`, same length as the game's list). The generator keeps the weights and each world's basic slots, so the fallback roll always has something. `map_card_value_weights` (10 weights for values 0-9) sets the values of enemy map cards. |
+| `heartless_card_value_weights` | `set_heartless_card_value_weights` | 10 weights for the values 0-9 of battle cards dropped by Heartless. |
+| `moogle_value_weights` | `set_moogle_value_weights` | Per pack tier (0-3), 10 weights for the values 0-9 (sum 100). |
+| `chest_card_value_weights`, `object_card_chance`, `object_card_room_cap` | `set_chest_card_value_weights`, `set_object_card_chance`, `set_object_card_room_cap` | Card drops from chests and breakable objects. |
+
+Exe tables (world select, boss rewards, level-up sleights) are written every 2 seconds; the rest goes through the
+library's `update_data_tables()` every frame. With an Archipelago seed, `recomRandoGameSettings.lua` turns level-up
+sleights off unless the lever seed sets them.
 
 ## Files shared with the client
 

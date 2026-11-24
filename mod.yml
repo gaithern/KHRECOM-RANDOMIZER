@@ -42,3 +42,7 @@ assets:
   method: copy
   source:
   - name: mod/scripts/recomRandoGameSettings.lua
+- name: scripts/recomRandoLevers.lua
+  method: copy
+  source:
+  - name: mod/scripts/recomRandoLevers.lua

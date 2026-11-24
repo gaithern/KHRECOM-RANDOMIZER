@@ -1,0 +1,4079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>KHRECOM Seed Generator</title>
+    <style>
+        :root {
+            --page-background: #f4f2ee;
+            --panel-background: #ffffff;
+            --text-color: #1f1d1a;
+            --muted-text-color: #5d5850;
+            --border-color: #d8d3ca;
+            --accent-color: #3b5bdb;
+            --accent-text-color: #ffffff;
+            --error-color: #c92a2a;
+            --success-color: #2b8a3e;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --page-background: #16171b;
+                --panel-background: #212329;
+                --text-color: #e9e7e3;
+                --muted-text-color: #a7a39b;
+                --border-color: #3a3d45;
+                --accent-color: #748ffc;
+                --accent-text-color: #101114;
+                --error-color: #ff8787;
+                --success-color: #69db7c;
+            }
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            padding: 24px 16px 48px;
+            background: var(--page-background);
+            color: var(--text-color);
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        main {
+            max-width: 820px;
+            margin: 0 auto;
+        }
+        h1 {
+            margin: 0 0 4px;
+            font-size: 26px;
+        }
+        .intro {
+            margin: 0 0 20px;
+            color: var(--muted-text-color);
+        }
+        section {
+            background: var(--panel-background);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px 18px;
+            margin-bottom: 14px;
+        }
+        h2 {
+            margin: 0 0 4px;
+            font-size: 17px;
+        }
+        .help {
+            margin: 0 0 12px;
+            color: var(--muted-text-color);
+            font-size: 14px;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px 12px;
+            margin-bottom: 10px;
+        }
+        .row:last-child {
+            margin-bottom: 0;
+        }
+        .row label {
+            min-width: 280px;
+        }
+        input[type="text"],
+        input[type="number"],
+        select {
+            font: inherit;
+            color: inherit;
+            background: var(--page-background);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 5px 8px;
+            max-width: 100%;
+        }
+        input[type="number"] {
+            width: 100px;
+        }
+        input[type="text"] {
+            width: 240px;
+        }
+        button {
+            font: inherit;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 6px 14px;
+            background: var(--page-background);
+            color: inherit;
+            cursor: pointer;
+        }
+        button.primary {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: var(--accent-text-color);
+            font-weight: 600;
+        }
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0 10px;
+        }
+        .value-table input[type="number"] {
+            width: 62px;
+        }
+        details summary {
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        [hidden] {
+            display: none;
+        }
+        input:disabled {
+            opacity: 0.45;
+        }
+        .odds-table {
+            overflow-x: auto;
+            margin-top: 12px;
+        }
+        .odds-table table {
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+        .odds-table th,
+        .odds-table td {
+            text-align: left;
+            padding: 3px 14px 3px 0;
+            font-weight: 400;
+        }
+        .odds-table thead th {
+            font-weight: 600;
+        }
+        .odds-table td {
+            font-variant-numeric: tabular-nums;
+        }
+        #message {
+            min-height: 1.5em;
+            margin: 0 0 10px;
+        }
+        #message.error {
+            color: var(--error-color);
+        }
+        #message.success {
+            color: var(--success-color);
+        }
+        pre {
+            background: var(--panel-background);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px;
+            overflow-x: auto;
+            font-size: 13px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <h1>KHRECOM Seed Generator</h1>
+    <p class="intro">
+        Builds a seed mod for Kingdom Hearts Re:Chain of Memories. Install the downloaded zip in OpenKH as its own mod,
+        next to KHRECOM-LUA-LIBRARY and KHRECOM-RANDOMIZER, and start a new game. The same seed and the same settings always
+        build the same mod.
+    </p>
+
+    <section>
+        <h2>Seed</h2>
+        <div class="row">
+            <label for="seed">Seed</label>
+            <input type="text" id="seed" maxlength="40">
+            <button type="button" id="new-seed">New seed</button>
+        </div>
+    </section>
+
+    <section>
+        <h2>Starting deck</h2>
+        <p class="help">
+            13 cards, at least one attack card, always under Sora's 275 starting CP. The healing cards are Cure, Bambi, Tinker Bell
+            and the enemy cards Oogie Boogie, Vexen, Neoshadow, Search Ghost and White Mushroom.
+        </p>
+        <div class="row">
+            <label for="starting-deck-mode">Randomize starting deck</label>
+            <select id="starting-deck-mode">
+                <option value="no">No</option>
+                <option value="yes" selected>Yes</option>
+            </select>
+        </div>
+        <div class="row" data-shown-with="starting-deck-mode" data-shown-for="yes">
+            <label for="starting-heal">Include Cure?</label>
+            <select id="starting-heal">
+                <option value="cure">Yes</option>
+                <option value="no">No</option>
+                <option value="healing" selected>Any healing card</option>
+            </select>
+        </div>
+    </section>
+
+    <section>
+        <h2>Floors</h2>
+        <div class="row">
+            <label for="floor-mode">Randomize floors</label>
+            <select id="floor-mode">
+                <option value="no">No</option>
+                <option value="groups">Shuffle worlds in floor groups</option>
+                <option value="all" selected>Shuffle all worlds F1 - F12</option>
+            </select>
+        </div>
+        <p class="help" data-shown-with="floor-mode" data-shown-for="groups all">
+            Every floor then offers one fixed world. The floor groups are 2 to 6 and 7 to 10. Bosses only have proper stats on
+            the floors they normally appear on.
+        </p>
+    </section>
+
+    <section>
+        <h2>Enemies and bosses</h2>
+        <div class="row">
+            <label for="heartless-mode">Randomize Heartless</label>
+            <select id="heartless-mode">
+                <option value="no">No</option>
+                <option value="yes" selected>Yes</option>
+            </select>
+        </div>
+        <div class="row">
+            <label for="boss-mode">Randomize bosses</label>
+            <select id="boss-mode">
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+                <option value="riku" selected>Yes (include Riku bosses)</option>
+            </select>
+        </div>
+        <div class="row" data-shown-with="boss-mode" data-shown-for="yes riku">
+            <label for="boss-scope">Which bosses</label>
+            <select id="boss-scope">
+                <option value="all">All bosses</option>
+                <option value="human">Only human-sized bosses</option>
+            </select>
+        </div>
+        <p class="help" data-shown-with="boss-mode" data-shown-for="yes riku">
+            Every boss brings its own reward. Riku's bosses are Lexaeus, Zexion and Ansem. This is experimental: big bosses were
+            made for their own arena and may look wrong, get stuck or crash. Keep the spoiler log to see which boss was where.
+        </p>
+        <div class="row">
+            <label for="enemy-drop-mode">Randomize enemy drops</label>
+            <select id="enemy-drop-mode">
+                <option value="no">No</option>
+                <option value="guaranteed" selected>Yes, first drop guaranteed</option>
+                <option value="vanilla">Yes, vanilla drop chance</option>
+            </select>
+        </div>
+        <div class="row">
+            <label for="enemy-deck-mode">Randomize enemy decks</label>
+            <select id="enemy-deck-mode">
+                <option value="no">No</option>
+                <option value="yes" selected>Yes</option>
+            </select>
+        </div>
+        <div class="row" data-shown-with="enemy-deck-mode" data-shown-for="yes">
+            <label for="deck-lowest">Lowest card value</label>
+            <input type="number" id="deck-lowest" min="0" max="9" step="1" value="0">
+        </div>
+        <div class="row" data-shown-with="enemy-deck-mode" data-shown-for="yes">
+            <label for="deck-highest">Highest card value</label>
+            <input type="number" id="deck-highest" min="0" max="9" step="1" value="9">
+        </div>
+        <p class="help">Randomize enemy stats: the largest change in percent, different for every enemy. 0 is off.</p>
+        <div class="row">
+            <label for="stat-hp">HP</label>
+            <input type="number" id="stat-hp" min="0" max="90" step="1" value="25">
+        </div>
+        <div class="row">
+            <label for="stat-attack">Attack power</label>
+            <input type="number" id="stat-attack" min="0" max="90" step="1" value="25">
+        </div>
+        <div class="row">
+            <label for="stat-exp">EXP</label>
+            <input type="number" id="stat-exp" min="0" max="90" step="1" value="25">
+        </div>
+    </section>
+
+    <section>
+        <h2>Rewards</h2>
+        <p class="help">
+            Everything set to Yes adds its cards to one card pool and its sleights to one sleight pool, and both pools are then
+            shuffled over the places they came from. Enemy drops add their cards to the same pool.
+        </p>
+        <div class="row">
+            <label for="bounty-mode">Randomize bounties</label>
+            <select id="bounty-mode">
+                <option value="no">No</option>
+                <option value="yes" selected>Yes</option>
+            </select>
+        </div>
+        <div class="row">
+            <label for="rewards-room-mode">Randomize Rooms of Rewards</label>
+            <select id="rewards-room-mode">
+                <option value="no">No</option>
+                <option value="yes" selected>Yes</option>
+            </select>
+        </div>
+        <div class="row">
+            <label for="boss-reward-mode">Randomize boss rewards</label>
+            <select id="boss-reward-mode">
+                <option value="no">No</option>
+                <option value="yes" selected>Yes</option>
+            </select>
+        </div>
+        <div class="row">
+            <label for="level-sleight-mode">Randomize level up sleights</label>
+            <select id="level-sleight-mode">
+                <option value="no">No</option>
+                <option value="yes" selected>Yes</option>
+            </select>
+        </div>
+        <div class="row">
+            <label for="friend-sleight-mode">Randomize friend sleights</label>
+            <select id="friend-sleight-mode">
+                <option value="no">No</option>
+                <option value="yes" selected>Yes</option>
+            </select>
+        </div>
+        <div class="row">
+            <label for="story-reward-mode">Randomize story rewards</label>
+            <select id="story-reward-mode">
+                <option value="no">No</option>
+                <option value="yes" selected>Yes</option>
+            </select>
+        </div>
+        <p class="help">
+            Boss rewards are the cards of every boss, Guard Armor and the other big ones too, and the sleights that come with your
+            first copy of a magic or summon card, so your starting cards can give shuffled sleights. Story rewards are the cards and sleights from events and 100 Acre Wood. Friend sleights are
+            given without a popup by the story scene where the friend joins, so whatever lands there is silent too. A friend
+            sleight found somewhere else still needs that friend's card in battle.
+        </p>
+    </section>
+
+    <section>
+        <h2>Cards</h2>
+        <div class="row">
+            <label for="drop-mode">Randomize object and normal chest drops</label>
+            <select id="drop-mode">
+                <option value="no">No</option>
+                <option value="unlocked">Yes (only cards that are unlocked)</option>
+                <option value="any" selected>Yes (any card can drop)</option>
+                <option value="own">My own odds (any card can drop)</option>
+            </select>
+        </div>
+        <div class="row">
+            <label for="moogle-mode">Randomize Moogle shops</label>
+            <select id="moogle-mode">
+                <option value="no">No</option>
+                <option value="unlocked">Yes (only cards that are unlocked)</option>
+                <option value="any" selected>Yes (any card can be found)</option>
+            </select>
+        </div>
+        <div class="row">
+            <label for="card-cp-mode">Randomize card CP value</label>
+            <select id="card-cp-mode">
+                <option value="no">No</option>
+                <option value="yes" selected>Yes</option>
+            </select>
+        </div>
+        <div class="row" data-shown-with="card-cp-mode" data-shown-for="yes">
+            <label for="card-cp-spread">Largest change (percent)</label>
+            <input type="number" id="card-cp-spread" min="0" max="90" step="1" value="25">
+        </div>
+    </section>
+
+    <section>
+        <h2>Card values</h2>
+        <div class="row">
+            <label for="card-value-mode">Card values that can be found</label>
+            <select id="card-value-mode">
+                <option value="any">Normal</option>
+                <option value="only" selected>Only some values</option>
+                <option value="own">My own weights</option>
+            </select>
+        </div>
+        <div data-shown-with="card-value-mode" data-shown-for="only" hidden>
+            <p class="help">Unchecked values are never found. The others keep their normal odds next to each other.</p>
+            <div class="odds-table value-table">
+                <table>
+                    <thead><tr><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th></tr></thead>
+                    <tbody><tr><td><input type="checkbox" id="value-allowed-0" aria-label="Card value 0"></td><td><input type="checkbox" id="value-allowed-1" aria-label="Card value 1" checked></td><td><input type="checkbox" id="value-allowed-2" aria-label="Card value 2" checked></td><td><input type="checkbox" id="value-allowed-3" aria-label="Card value 3" checked></td><td><input type="checkbox" id="value-allowed-4" aria-label="Card value 4" checked></td><td><input type="checkbox" id="value-allowed-5" aria-label="Card value 5" checked></td><td><input type="checkbox" id="value-allowed-6" aria-label="Card value 6"></td><td><input type="checkbox" id="value-allowed-7" aria-label="Card value 7"></td><td><input type="checkbox" id="value-allowed-8" aria-label="Card value 8"></td><td><input type="checkbox" id="value-allowed-9" aria-label="Card value 9"></td></tr></tbody>
+                </table>
+            </div>
+        </div>
+        <div data-shown-with="card-value-mode" data-shown-for="own" hidden>
+            <p class="help">How often each value is found. 0 is never. They do not have to add up to 100.</p>
+            <div class="odds-table value-table">
+                <table>
+                    <thead><tr><th scope="col">0</th><th scope="col">1</th><th scope="col">2</th><th scope="col">3</th><th scope="col">4</th><th scope="col">5</th><th scope="col">6</th><th scope="col">7</th><th scope="col">8</th><th scope="col">9</th></tr></thead>
+                    <tbody><tr><td><input type="number" id="value-weight-0" aria-label="Weight of card value 0" min="0" max="100" step="1" value="10"></td><td><input type="number" id="value-weight-1" aria-label="Weight of card value 1" min="0" max="100" step="1" value="10"></td><td><input type="number" id="value-weight-2" aria-label="Weight of card value 2" min="0" max="100" step="1" value="10"></td><td><input type="number" id="value-weight-3" aria-label="Weight of card value 3" min="0" max="100" step="1" value="10"></td><td><input type="number" id="value-weight-4" aria-label="Weight of card value 4" min="0" max="100" step="1" value="10"></td><td><input type="number" id="value-weight-5" aria-label="Weight of card value 5" min="0" max="100" step="1" value="10"></td><td><input type="number" id="value-weight-6" aria-label="Weight of card value 6" min="0" max="100" step="1" value="10"></td><td><input type="number" id="value-weight-7" aria-label="Weight of card value 7" min="0" max="100" step="1" value="10"></td><td><input type="number" id="value-weight-8" aria-label="Weight of card value 8" min="0" max="100" step="1" value="10"></td><td><input type="number" id="value-weight-9" aria-label="Weight of card value 9" min="0" max="100" step="1" value="10"></td></tr></tbody>
+                </table>
+            </div>
+        </div>
+        <p class="help" data-shown-with="card-value-mode" data-shown-for="only own">
+            This covers chests, objects, bounties, Rooms of Rewards, enemy drops, Moogle shops, boss and story rewards and the
+            starting deck, randomized or not. Enemy cards have no value. Friend cards in battle are not changed. If you already
+            hold 99 copies of a card, the game can still give a nearby value.
+        </p>
+        <div class="row" data-shown-with="card-value-mode" data-shown-for="only own">
+            <label for="card-value-maps">Map cards from enemies too</label>
+            <select id="card-value-maps">
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+            </select>
+        </div>
+        <p class="help" data-shown-with="card-value-maps" data-shown-for="yes">
+            Doors ask for map card values, so without high values or 0 some doors may never open.
+        </p>
+    </section>
+
+    <section>
+        <h2>Power</h2>
+        <p class="help">
+            Card power covers attack, magic, summon and friend cards. Attack cards have a strike, a thrust and a finisher power.
+            Power is a percent of Sora's attack for most cards and sleights. A few values are something else: Gravity takes a percent of
+            HP, Stop and stunning moves hold a time, and some are the number of hits.
+        </p>
+        <div class="row">
+            <label for="card-power-mode">Randomize card power</label>
+            <select id="card-power-mode">
+                <option value="no">No</option>
+                <option value="random" selected>Yes (random)</option>
+                <option value="own">Yes (choose every value)</option>
+            </select>
+        </div>
+        <div class="row" data-shown-with="card-power-mode" data-shown-for="random own">
+            <label for="card-power-lowest">Random power, percent of normal</label>
+            <input type="number" id="card-power-lowest" min="0" max="1000" step="1" value="50">
+            <span>to</span>
+            <input type="number" id="card-power-highest" aria-label="Randomize card power, highest percent" min="0" max="1000" step="1" value="150">
+        </div>
+        <div data-shown-with="card-power-mode" data-shown-for="own" hidden>
+            <div class="row">
+                <button type="button" id="card-power-fill">Fill with random power</button>
+                <button type="button" id="card-power-reset">Back to normal</button>
+            </div>
+            <div class="odds-table">
+                <table>
+                    <thead><tr><th scope="col">Name</th><th scope="col">Power 1 (strike)</th><th scope="col">Power 2 (thrust)</th><th scope="col">Power 3 (finisher)</th><th scope="col">Power 4</th></tr></thead>
+                    <tbody id="card-power-rows"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <label for="sleight-power-mode">Randomize sleight power</label>
+            <select id="sleight-power-mode">
+                <option value="no">No</option>
+                <option value="random" selected>Yes (random)</option>
+                <option value="own">Yes (choose every value)</option>
+            </select>
+        </div>
+        <div class="row" data-shown-with="sleight-power-mode" data-shown-for="random own">
+            <label for="sleight-power-lowest">Random power, percent of normal</label>
+            <input type="number" id="sleight-power-lowest" min="0" max="1000" step="1" value="50">
+            <span>to</span>
+            <input type="number" id="sleight-power-highest" aria-label="Randomize sleight power, highest percent" min="0" max="1000" step="1" value="150">
+        </div>
+        <div data-shown-with="sleight-power-mode" data-shown-for="own" hidden>
+            <div class="row">
+                <button type="button" id="sleight-power-fill">Fill with random power</button>
+                <button type="button" id="sleight-power-reset">Back to normal</button>
+            </div>
+            <div class="odds-table">
+                <table>
+                    <thead><tr><th scope="col">Name</th><th scope="col">Power 1</th><th scope="col">Power 2</th><th scope="col">Power 3</th><th scope="col">Power 4</th></tr></thead>
+                    <tbody id="sleight-power-rows"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Story doors and map cards</h2>
+        <div class="row">
+            <label for="door-mode">Story doors only need their key</label>
+            <select id="door-mode">
+                <option value="no">No</option>
+                <option value="yes" selected>Yes</option>
+            </select>
+        </div>
+        <div class="row">
+            <label for="map-card-mode">Randomize map card drops</label>
+            <select id="map-card-mode">
+                <option value="no">No</option>
+                <option value="random">Yes (random odds)</option>
+                <option value="own">Yes (choose odds)</option>
+                <option value="joker" selected>Always drop Random Joker (story doors must only need their key)</option>
+            </select>
+        </div>
+        <p class="help" data-shown-with="map-card-mode" data-shown-for="joker">
+            Key to Rewards can still drop, and while you hold 9 Random Jokers the game gives other map cards.
+        </p>
+    </section>
+
+    <section id="odds-section" hidden>
+        <h2>Odds</h2>
+        <p class="help">
+            The chance of every card in percent. A column that does not add up to 100 is scaled, and every card above 0 keeps at
+            least 1%.
+        </p>
+        <div class="row">
+            <label for="odds-world">World to edit</label>
+            <select id="odds-world"></select>
+        </div>
+        <div class="row">
+            <button type="button" id="odds-reset">Back to vanilla</button>
+            <button type="button" id="odds-random">Fill with random odds</button>
+            <button type="button" id="odds-clear">Set all to 0</button>
+            <button type="button" id="odds-copy">Copy to every world</button>
+        </div>
+        <div id="odds-battle-cards" class="odds-table" hidden>
+            <table>
+                <thead>
+                    <tr><th scope="col">Battle card</th><th scope="col">Chests</th><th scope="col">Objects</th></tr>
+                    <tr><th scope="row">Total</th><td id="odds-total-chest"></td><td id="odds-total-object"></td></tr>
+                </thead>
+                <tbody id="odds-battle-rows"></tbody>
+            </table>
+        </div>
+        <div id="odds-map-cards" class="odds-table" hidden>
+            <table>
+                <thead>
+                    <tr><th scope="col">Map card</th><th scope="col">Enemies</th></tr>
+                    <tr><th scope="row">Total</th><td id="odds-total-map"></td></tr>
+                </thead>
+                <tbody id="odds-map-rows"></tbody>
+            </table>
+            <p class="help">
+                Random Joker and Key to Rewards are rolled before the list, so they are separate from its 100%. Random Joker is
+                divided by 3 or 6 on two of the three difficulty settings.
+            </p>
+            <table>
+                <thead>
+                    <tr><th scope="col">Rolled first</th><th scope="col">Percent</th></tr>
+                </thead>
+                <tbody id="odds-rate-rows"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section>
+        <details>
+            <summary>More settings</summary>
+            <div class="row">
+                <label for="floor-layout-mode">Randomize floor layouts</label>
+                <select id="floor-layout-mode">
+                    <option value="no">No</option>
+                    <option value="yes" selected>Yes</option>
+                </select>
+            </div>
+            <div class="row">
+                <label for="map-value-mode">Enemy map card values</label>
+                <select id="map-value-mode">
+                    <option value="vanilla">Vanilla</option>
+                    <option value="even">Every value equally likely</option>
+                    <option value="random" selected>Random weights in each world</option>
+                </select>
+            </div>
+            <div class="row">
+                <label for="object-chance">Object card chance (percent)</label>
+                <input type="number" id="object-chance" min="0" max="100" step="1" placeholder="vanilla">
+            </div>
+            <div class="row">
+                <label for="object-cap">Object cards per room</label>
+                <input type="number" id="object-cap" min="0" max="99" step="1" placeholder="vanilla">
+            </div>
+            <div class="row">
+                <label for="enemy-hp">HP multiplier for every enemy</label>
+                <input type="number" id="enemy-hp" min="0" max="100" step="0.1" value="1">
+            </div>
+            <div class="row">
+                <label for="enemy-attack">Attack multiplier for every enemy</label>
+                <input type="number" id="enemy-attack" min="0" max="100" step="0.1" value="1">
+            </div>
+            <div class="row">
+                <label for="enemy-exp">EXP multiplier for every enemy</label>
+                <input type="number" id="enemy-exp" min="0" max="100" step="0.1" value="1">
+            </div>
+        </details>
+    </section>
+
+    <div class="actions">
+        <button type="button" id="generate" class="primary">Download seed mod</button>
+        <button type="button" id="preview">Show spoiler log</button>
+        <button type="button" id="reset">Reset settings</button>
+    </div>
+    <p id="message"></p>
+    <pre id="spoiler" hidden></pre>
+</main>
+
+<script>
+        var ATTACK_CARDS = [
+            { id: 1, name: "Kingdom Key", cp: 10 },
+            { id: 2, name: "Three Wishes", cp: 15 },
+            { id: 3, name: "Crabclaw", cp: 20 },
+            { id: 4, name: "Pumpkinhead", cp: 15 },
+            { id: 5, name: "Fairy Harp", cp: 20 },
+            { id: 6, name: "Wishing Star", cp: 15 },
+            { id: 7, name: "Spellbinder", cp: 20 },
+            { id: 8, name: "Metal Chocobo", cp: 20 },
+            { id: 9, name: "Olympia", cp: 15 },
+            { id: 10, name: "Lionheart", cp: 20 },
+            { id: 11, name: "Lady Luck", cp: 15 },
+            { id: 12, name: "Divine Rose", cp: 20 },
+            { id: 13, name: "Oathkeeper", cp: 25 },
+            { id: 14, name: "Oblivion", cp: 25 },
+            { id: 15, name: "Ultima Weapon", cp: 30 },
+            { id: 16, name: "Diamond Dust", cp: 25 },
+            { id: 17, name: "One Winged Angel", cp: 25 },
+            { id: 18, name: "Soul Eater", cp: 10 },
+            { id: 19, name: "Star Seeker", cp: 15 },
+            { id: 20, name: "Total Eclipse", cp: 20 },
+            { id: 21, name: "Midnight Roar", cp: 20 },
+            { id: 22, name: "Maverick Flare", cp: 20 },
+            { id: 23, name: "Two Become One", cp: 20 },
+            { id: 24, name: "Bond of Flame", cp: 25 }
+        ];
+        var MAGIC_CARDS = [
+            { id: 26, name: "Fire", cp: 15 },
+            { id: 27, name: "Blizzard", cp: 15 },
+            { id: 28, name: "Thunder", cp: 15 },
+            { id: 29, name: "Cure", cp: 25 },
+            { id: 30, name: "Gravity", cp: 20 },
+            { id: 31, name: "Stop", cp: 20 },
+            { id: 32, name: "Aero", cp: 20 }
+        ];
+        var SUMMON_CARDS = [
+            { id: 35, name: "Simba", cp: 20 },
+            { id: 36, name: "Genie", cp: 20 },
+            { id: 37, name: "Bambi", cp: 20 },
+            { id: 38, name: "Dumbo", cp: 20 },
+            { id: 39, name: "Tinker Bell", cp: 20 },
+            { id: 40, name: "Mushu", cp: 25 },
+            { id: 41, name: "Cloud", cp: 25 }
+        ];
+        var ITEM_CARDS = [
+            { id: 42, name: "Potion", cp: 30 },
+            { id: 43, name: "Hi-Potion", cp: 40 },
+            { id: 44, name: "Mega-Potion", cp: 45 },
+            { id: 45, name: "Ether", cp: 20 },
+            { id: 46, name: "Mega-Ether", cp: 35 },
+            { id: 47, name: "Elixir", cp: 45 },
+            { id: 48, name: "Megalixir", cp: 50 }
+        ];
+        var BOSS_REWARDS = [
+            { record: 1, boss: "Guard Armor", location: "Traverse Town Room of Truth", card: 99, value: 0 },
+            { record: 2, boss: "Card Soldiers", location: "Wonderland Room of Beginnings", card: 103, value: 0 },
+            { record: 3, boss: "Card Soldiers (2nd)", location: "Wonderland (second Card Soldier entry)", card: 103, value: 0 },
+            { record: 4, boss: "Trickmaster", location: "Wonderland Room of Truth", card: 101, value: 0 },
+            { record: 5, boss: "Cloud", location: "Olympus Coliseum Room of Guidance", card: 43, value: 3 },
+            { record: 6, boss: "Hades", location: "Olympus Coliseum Room of Truth", card: 104, value: 0 },
+            { record: 7, boss: "Jafar", location: "Agrabah Room of Truth", card: 105, value: 0 },
+            { record: 8, boss: "Oogie Boogie", location: "Halloween Town Room of Truth", card: 106, value: 0 },
+            { record: 9, boss: "Parasite Cage", location: "Monstro Room of Guidance", card: 100, value: 0 },
+            { record: 10, boss: "Ursula", location: "Atlantica Room of Truth", card: 107, value: 0 },
+            { record: 11, boss: "Hook", location: "Neverland Room of Truth", card: 108, value: 0 },
+            { record: 12, boss: "Dragon Maleficent", location: "Hollow Bastion Room of Truth", card: 109, value: 0 },
+            { record: 13, boss: "Vexen", location: "Twilight Town Room of Beginnings", card: 113, value: 0 },
+            { record: 14, boss: "Vexen", location: "Twilight Town Room of Beginnings", card: 113, value: 0 },
+            { record: 15, boss: "Darkside", location: "Destiny Islands Room of Guidance", card: 102, value: 0 },
+            { record: 16, boss: "Riku I", location: "07F Exit Hall", card: 32, value: 6 },
+            { record: 17, boss: "Riku III", location: "11F Exit Hall", card: 44, value: 2 },
+            { record: 18, boss: "Riku IV", location: "12F Exit Hall", card: 110, value: 0 },
+            { record: 19, boss: "Larxene I", location: "06F Exit Hall", card: 28, value: 7 },
+            { record: 20, boss: "Larxene II", location: "12F Exit Hall", card: 112, value: 0 },
+            { record: 21, boss: "Axel 1", location: "1F Exit Hall", card: 26, value: 5 },
+            { record: 22, boss: "Axel II", location: "Castle Oblivion Room of Beginnings", card: 111, value: 0 },
+            { record: 23, boss: "Marluxia", location: "Castle Oblivion", card: 114, value: 0 },
+            { record: 24, boss: "Lexaeus", location: "?", card: 115, value: 0 },
+            { record: 25, boss: "Zexion", location: "?", card: 117, value: 0 }
+        ];
+        var ENEMY_CARD_NAMES = {
+            68: "Shadow",
+            69: "Soldier",
+            70: "Large Body",
+            71: "Red Nocturne",
+            72: "Blue Rhapsody",
+            73: "Yellow Opera",
+            74: "Green Requiem",
+            75: "Powerwild",
+            76: "Bouncywild",
+            77: "Air Soldier",
+            78: "Bandit",
+            79: "Fat Bandit",
+            80: "Barrel Spider",
+            81: "Search Ghost",
+            82: "Sea Neon",
+            83: "Screwdiver",
+            84: "Aquatank",
+            85: "Wight Knight",
+            86: "Gargoyle",
+            87: "Pirate",
+            88: "Air Pirate",
+            89: "Darkball",
+            90: "Defender",
+            91: "Wyvern",
+            92: "Wizard",
+            93: "Neoshadow",
+            94: "White Mushroom",
+            95: "Black Fungus",
+            96: "Creeper Plant",
+            97: "Tornado Step",
+            98: "Crescendo",
+            99: "Guard Armor",
+            100: "Parasite Cage",
+            101: "Trickmaster",
+            102: "Darkside",
+            103: "Card Soldier",
+            104: "Hades",
+            105: "Jafar",
+            106: "Oogie Boogie",
+            107: "Ursula",
+            108: "Hook",
+            109: "Dragon Maleficent",
+            110: "Riku",
+            111: "Axel",
+            112: "Larxene",
+            113: "Vexen",
+            114: "Marluxia",
+            115: "Lexaeus",
+            116: "Ansem",
+            117: "Zexion",
+            118: "Xemnas",
+            119: "Xigbar",
+            120: "Xaldin",
+            121: "Saix",
+            122: "Demyx",
+            123: "Luxord",
+            124: "Roxas"
+        };
+        var SORA_SLEIGHTS = [
+            { id: 4, name: "Sliding Dash" },
+            { id: 5, name: "Blitz" },
+            { id: 6, name: "Stun Impact" },
+            { id: 7, name: "Zantetsuken" },
+            { id: 8, name: "Strike Raid" },
+            { id: 9, name: "Sonic Blade" },
+            { id: 10, name: "Ars Arcanum" },
+            { id: 11, name: "Ragnarok" },
+            { id: 12, name: "Trinity Limit" },
+            { id: 13, name: "Fira" },
+            { id: 14, name: "Blizzara" },
+            { id: 15, name: "Thundara" },
+            { id: 16, name: "Cura" },
+            { id: 17, name: "Gravira" },
+            { id: 18, name: "Stopra" },
+            { id: 19, name: "Aerora" },
+            { id: 20, name: "Firaga" },
+            { id: 21, name: "Blizzaga" },
+            { id: 22, name: "Thundaga" },
+            { id: 23, name: "Curaga" },
+            { id: 24, name: "Graviga" },
+            { id: 25, name: "Stopga" },
+            { id: 26, name: "Aeroga" },
+            { id: 27, name: "Fire Raid" },
+            { id: 28, name: "Blizzard Raid" },
+            { id: 29, name: "Thunder Raid" },
+            { id: 30, name: "Reflect Raid" },
+            { id: 31, name: "Judgment" },
+            { id: 32, name: "Firaga Burst" },
+            { id: 33, name: "Raging Storm" },
+            { id: 34, name: "Mega Flare" },
+            { id: 35, name: "Freeze" },
+            { id: 36, name: "Homing Blizzara" },
+            { id: 37, name: "Aqua Splash" },
+            { id: 38, name: "Magnet Spiral" },
+            { id: 39, name: "Lethal Frame" },
+            { id: 40, name: "Shock Impact" },
+            { id: 41, name: "Tornado" },
+            { id: 42, name: "Quake" },
+            { id: 43, name: "Warpinator" },
+            { id: 44, name: "Warp" },
+            { id: 45, name: "Bind" },
+            { id: 46, name: "Confuse" },
+            { id: 47, name: "Terror" },
+            { id: 48, name: "Synchro" },
+            { id: 49, name: "Gifted Miracle" },
+            { id: 50, name: "Teleport" },
+            { id: 51, name: "Holy" }
+        ];
+        var VANILLA_LEVEL_UP_SLEIGHTS = [
+            { slot: 1, level: 2, sleight: 4 },
+            { slot: 2, level: 7, sleight: 6 },
+            { slot: 3, level: 12, sleight: 8 },
+            { slot: 4, level: 17, sleight: 5 },
+            { slot: 5, level: 22, sleight: 7 },
+            { slot: 6, level: 27, sleight: 9 },
+            { slot: 7, level: 32, sleight: 39 },
+            { slot: 8, level: 37, sleight: 41 },
+            { slot: 9, level: 42, sleight: 10 },
+            { slot: 10, level: 47, sleight: 51 },
+            { slot: 11, level: 52, sleight: 11 },
+            { slot: 12, level: 57, sleight: 34 }
+        ];
+        var HEARTLESS_DECKS = [
+            { kind: 1, name: "Shadow", cards: 1 },
+            { kind: 2, name: "Soldier", cards: 3 },
+            { kind: 3, name: "Red Nocturne", cards: 3 },
+            { kind: 4, name: "Blue Rhapsody", cards: 3 },
+            { kind: 5, name: "Yellow Opera", cards: 3 },
+            { kind: 6, name: "Green Requiem", cards: 3 },
+            { kind: 7, name: "Powerwild", cards: 3 },
+            { kind: 8, name: "Bouncywild", cards: 3 },
+            { kind: 9, name: "Large Body", cards: 3 },
+            { kind: 10, name: "Fat Bandit", cards: 3 },
+            { kind: 11, name: "Bandit", cards: 2 },
+            { kind: 12, name: "Wight Knight", cards: 2 },
+            { kind: 13, name: "Gargoyle", cards: 2 },
+            { kind: 14, name: "Search Ghost", cards: 3 },
+            { kind: 15, name: "Air Soldier", cards: 2 },
+            { kind: 17, name: "Black Fungus", cards: 1 },
+            { kind: 18, name: "Sea Neon", cards: 1 },
+            { kind: 19, name: "Screwdiver", cards: 2 },
+            { kind: 20, name: "Aquatank", cards: 3 },
+            { kind: 21, name: "Pirate", cards: 2 },
+            { kind: 22, name: "Air Pirate", cards: 2 },
+            { kind: 23, name: "Darkball", cards: 3 },
+            { kind: 24, name: "Wyvern", cards: 3 },
+            { kind: 25, name: "Wizard", cards: 3 },
+            { kind: 26, name: "Defender", cards: 4 },
+            { kind: 27, name: "Neoshadow", cards: 3 },
+            { kind: 28, name: "Barrel Spider", cards: 1 },
+            { kind: 29, name: "Tornado Step", cards: 3 },
+            { kind: 30, name: "Crescendo", cards: 3 },
+            { kind: 31, name: "Creeper Plant", cards: 3 },
+            { kind: 32, name: "Shadow (variant)", cards: 1 },
+            { kind: 33, name: "Search Ghost (variant)", cards: 3 },
+            { kind: 35, name: "Black Fungus (copy)", cards: 1 },
+            { kind: 36, name: "Creeper Plant (variant)", cards: 3 }
+        ];
+        var BOSS_DECKS = [
+            { kind: 101, name: "Leon", cards: 25 },
+            { kind: 102, name: "Guard Armor", cards: 5 },
+            { kind: 103, name: "Card Soldier (Spades)", cards: 4 },
+            { kind: 104, name: "Card Soldier (Hearts)", cards: 4 },
+            { kind: 105, name: "Trickmaster", cards: 9 },
+            { kind: 106, name: "Cloud", cards: 14 },
+            { kind: 107, name: "Hades", cards: 18 },
+            { kind: 108, name: "Jafar (Genie)", cards: 7 },
+            { kind: 109, name: "Oogie Boogie", cards: 5 },
+            { kind: 110, name: "Parasite Cage", cards: 6 },
+            { kind: 111, name: "Ursula", cards: 9 },
+            { kind: 112, name: "Captain Hook", cards: 12 },
+            { kind: 113, name: "Dragon Maleficent", cards: 9 },
+            { kind: 114, name: "Vexen", cards: 17 },
+            { kind: 115, name: "Darkside", cards: 9 },
+            { kind: 116, name: "Riku", cards: 13 },
+            { kind: 117, name: "Larxene", cards: 12 },
+            { kind: 118, name: "Axel", cards: 7 },
+            { kind: 119, name: "Marluxia", cards: 24 },
+            { kind: 120, name: "Marluxia (final form)", cards: 8 },
+            { kind: 121, name: "Lexaeus", cards: 32 },
+            { kind: 122, name: "Ansem", cards: 12 },
+            { kind: 123, name: "Ansem (variant)", cards: 10 },
+            { kind: 124, name: "Zexion", cards: 33 },
+            { kind: 132, name: "Marluxia (another form)", cards: 9 }
+        ];
+
+        var CHEST_REWARDS = [
+            { list: "room_of_rewards", world: 1, chest: 1, kind: "card", vanilla: 10 },
+            { list: "room_of_rewards", world: 1, chest: 2, kind: "card", vanilla: 121 },
+            { list: "room_of_rewards", world: 2, chest: 1, kind: "sleight", vanilla: 44 },
+            { list: "room_of_rewards", world: 2, chest: 2, kind: "card", vanilla: 123 },
+            { list: "room_of_rewards", world: 3, chest: 1, kind: "card", vanilla: 8 },
+            { list: "room_of_rewards", world: 3, chest: 2, kind: "card", vanilla: 20 },
+            { list: "room_of_rewards", world: 4, chest: 1, kind: "sleight", vanilla: 48 },
+            { list: "room_of_rewards", world: 4, chest: 2, kind: "card", vanilla: 118 },
+            { list: "room_of_rewards", world: 5, chest: 1, kind: "sleight", vanilla: 37 },
+            { list: "room_of_rewards", world: 5, chest: 2, kind: "card", vanilla: 120 },
+            { list: "room_of_rewards", world: 6, chest: 1, kind: "sleight", vanilla: 45 },
+            { list: "room_of_rewards", world: 6, chest: 2, kind: "card", vanilla: 24 },
+            { list: "room_of_rewards", world: 7, chest: 1, kind: "sleight", vanilla: 42 },
+            { list: "room_of_rewards", world: 7, chest: 2, kind: "card", vanilla: 122 },
+            { list: "room_of_rewards", world: 8, chest: 1, kind: "sleight", vanilla: 29 },
+            { list: "room_of_rewards", world: 8, chest: 2, kind: "card", vanilla: 21 },
+            { list: "room_of_rewards", world: 9, chest: 1, kind: "card", vanilla: 40 },
+            { list: "room_of_rewards", world: 9, chest: 2, kind: "card", vanilla: 119 },
+            { list: "room_of_rewards", world: 11, chest: 1, kind: "sleight", vanilla: 70 },
+            { list: "room_of_rewards", world: 11, chest: 2, kind: "card", vanilla: 124 },
+            { list: "room_of_rewards", world: 12, chest: 1, kind: "card", vanilla: 48 },
+            { list: "room_of_rewards", world: 12, chest: 2, kind: "card", vanilla: 23 },
+            { list: "room_of_rewards", world: 13, chest: 1, kind: "sleight", vanilla: 92 },
+            { list: "room_of_rewards", world: 13, chest: 2, kind: "card", vanilla: 19 },
+            { list: "bounties", world: 1, chest: 1, kind: "card", vanilla: 22 },
+            { list: "bounties", world: 2, chest: 1, kind: "card", vanilla: 30 },
+            { list: "bounties", world: 3, chest: 1, kind: "sleight", vanilla: 28 },
+            { list: "bounties", world: 4, chest: 1, kind: "card", vanilla: 31 },
+            { list: "bounties", world: 5, chest: 1, kind: "sleight", vanilla: 27 },
+            { list: "bounties", world: 6, chest: 1, kind: "sleight", vanilla: 49 },
+            { list: "bounties", world: 7, chest: 1, kind: "sleight", vanilla: 40 },
+            { list: "bounties", world: 7, chest: 2, kind: "sleight", vanilla: 36 },
+            { list: "bounties", world: 8, chest: 1, kind: "sleight", vanilla: 50 },
+            { list: "bounties", world: 9, chest: 1, kind: "sleight", vanilla: 30 },
+            { list: "bounties", world: 10, chest: 1, kind: "card", vanilla: 7 },
+            { list: "bounties", world: 11, chest: 1, kind: "sleight", vanilla: 43 },
+            { list: "bounties", world: 11, chest: 2, kind: "card", vanilla: 116 },
+            { list: "bounties", world: 12, chest: 1, kind: "sleight", vanilla: 31 },
+            { list: "bounties", world: 12, chest: 2, kind: "card", vanilla: 117 },
+            { list: "bounties", world: 13, chest: 1, kind: "sleight", vanilla: 33 },
+            { list: "bounties", world: 13, chest: 2, kind: "card", vanilla: 15 },
+            { list: "bounties", world: 13, chest: 3, kind: "card", vanilla: 115 }
+        ];
+        var OTHER_SLEIGHT_NAMES = {
+            52: "Proud Roar LV2",
+            53: "Proud Roar LV3",
+            54: "Splash LV2",
+            55: "Splash LV3",
+            56: "Paradise LV2",
+            57: "Paradise LV3",
+            58: "Idyll Romp",
+            59: "Flare Breath LV2",
+            60: "Flare Breath LV3",
+            61: "Showtime LV2",
+            62: "Showtime LV3",
+            63: "Twinkle LV2",
+            64: "Twinkle LV3",
+            65: "Cross-slash",
+            66: "Omnislash",
+            67: "Cross-slash+",
+            68: "Magic LV2",
+            69: "Magic LV3",
+            70: "Stardust Blitz",
+            71: "Goofy Tornado LV2",
+            72: "Goofy Tornado LV3",
+            73: "Goofy Smash",
+            74: "Wild Crush",
+            75: "Sandstorm LV2",
+            76: "Sandstorm LV3",
+            77: "Surprise! LV2",
+            78: "Surprise! LV3",
+            79: "Spiral Wave LV2",
+            80: "Spiral Wave LV3",
+            81: "Hummingbird LV2",
+            82: "Hummingbird LV3",
+            83: "Furious Volley LV2",
+            84: "Furious Volley LV3",
+            85: "Lucky Bounty LV2",
+            86: "Lucky Bounty LV3"
+        };
+
+        var VANILLA_DROP_LISTS = [
+            { world: 1,
+              chest: [[1, 50], [10, 15], [15, 5], [19, 5], [20, 5], [22, 5], [23, 5], [24, 5], [26, 10], [27, 15], [29, 20], [35, 10], [42, 15]],
+              object: [[1, 60], [10, 29], [15, 3], [19, 3], [20, 3], [21, 3], [22, 3], [23, 3], [24, 3], [27, 10], [29, 15], [35, 5], [42, 15]] },
+            { world: 2,
+              chest: [[2, 70], [15, 5], [19, 5], [20, 5], [21, 5], [22, 5], [23, 5], [24, 5], [26, 10], [27, 15], [29, 15], [30, 10], [36, 10], [45, 10]],
+              object: [[1, 30], [2, 60], [15, 3], [19, 3], [20, 3], [21, 3], [22, 3], [23, 3], [24, 3], [26, 10], [27, 5], [29, 5], [30, 10], [31, 6], [36, 7], [43, 6], [45, 10]] },
+            { world: 3,
+              chest: [[8, 10], [9, 70], [15, 5], [19, 5], [21, 5], [22, 5], [26, 5], [27, 15], [29, 15], [30, 5], [31, 5], [41, 15], [43, 10]],
+              object: [[1, 25], [8, 15], [9, 55], [15, 3], [19, 3], [20, 3], [21, 3], [22, 3], [23, 3], [24, 3], [26, 10], [27, 5], [29, 15], [30, 4], [31, 4], [41, 10], [43, 7], [45, 5]] },
+            { world: 4,
+              chest: [[11, 60], [15, 5], [19, 5], [20, 5], [21, 5], [22, 5], [23, 5], [24, 5], [26, 5], [27, 10], [29, 20], [31, 10], [35, 5], [42, 10], [43, 5], [45, 5]],
+              object: [[1, 25], [11, 55], [15, 3], [19, 3], [20, 3], [21, 3], [22, 3], [23, 3], [24, 3], [26, 10], [27, 10], [30, 5], [31, 10], [42, 10], [43, 7], [45, 7]] },
+            { world: 5,
+              chest: [[6, 75], [15, 5], [19, 5], [20, 5], [21, 5], [22, 5], [24, 5], [26, 20], [27, 10], [29, 15], [30, 5], [31, 5], [38, 15], [43, 5], [45, 5]],
+              object: [[1, 25], [6, 50], [15, 3], [19, 3], [20, 3], [21, 3], [22, 3], [23, 3], [24, 3], [26, 12], [27, 3], [29, 12], [30, 6], [31, 5], [38, 7], [42, 10], [43, 5], [45, 5]] },
+            { world: 6,
+              chest: [[4, 70], [15, 5], [19, 5], [20, 5], [21, 5], [22, 5], [23, 5], [24, 5], [26, 5], [27, 10], [29, 10], [30, 5], [31, 5], [35, 5], [42, 10], [43, 5], [45, 5]],
+              object: [[1, 20], [4, 50], [15, 3], [19, 3], [20, 3], [21, 3], [22, 3], [23, 3], [24, 3], [26, 10], [27, 5], [29, 10], [30, 8], [31, 8], [42, 15], [43, 5], [45, 5]] },
+            { world: 7,
+              chest: [[3, 80], [7, 5], [10, 5], [15, 5], [21, 5], [22, 5], [23, 5], [27, 20], [28, 15], [31, 15], [32, 15], [37, 10]],
+              object: [[1, 20], [3, 55], [7, 2], [9, 10], [15, 3], [19, 3], [20, 3], [21, 3], [22, 3], [23, 3], [24, 3], [27, 5], [28, 9], [30, 5], [31, 10], [32, 15], [42, 10], [43, 4], [45, 3]] },
+            { world: 8,
+              chest: [[5, 70], [7, 5], [10, 5], [15, 5], [21, 5], [23, 5], [24, 5], [26, 5], [27, 10], [28, 10], [29, 10], [30, 15], [32, 20], [39, 10], [42, 10]],
+              object: [[1, 30], [5, 60], [7, 2], [9, 10], [15, 3], [19, 3], [20, 3], [21, 3], [22, 3], [23, 3], [24, 3], [26, 8], [28, 10], [30, 10], [31, 5], [32, 20], [39, 10]] },
+            { world: 9,
+              chest: [[7, 5], [10, 5], [12, 100], [15, 5], [20, 5], [23, 5], [28, 15], [30, 10], [31, 10], [32, 12], [40, 15], [45, 5]],
+              object: [[1, 20], [7, 2], [9, 10], [12, 70], [15, 3], [19, 3], [20, 3], [21, 3], [22, 3], [23, 3], [24, 3], [28, 25], [30, 5], [31, 6], [32, 15], [40, 10], [41, 10]] },
+            { world: 10,
+              chest: [[7, 100]],
+              object: [[1, 100], [15, 3], [19, 3], [20, 3], [21, 3], [22, 3], [23, 3], [24, 3], [26, 15]] },
+            { world: 11,
+              chest: [[7, 5], [10, 5], [15, 5], [17, 15], [19, 5], [20, 5], [21, 5], [22, 5], [23, 5], [24, 5], [26, 10], [27, 60], [28, 10], [29, 40], [37, 5], [44, 5]],
+              object: [[1, 40], [7, 14], [8, 11], [9, 40], [15, 5], [17, 15], [19, 3], [20, 3], [21, 3], [22, 3], [23, 3], [24, 3], [26, 8], [27, 10], [28, 1], [29, 10], [30, 1], [31, 1], [32, 1], [35, 1], [36, 1], [37, 1], [38, 1], [39, 1], [40, 1], [41, 1], [45, 3], [46, 5], [47, 5]] },
+            { world: 12,
+              chest: [[13, 20], [14, 20], [15, 5], [19, 5], [20, 5], [21, 5], [22, 5], [23, 5], [24, 5], [29, 100], [30, 5], [31, 5], [32, 5], [46, 5], [47, 5]],
+              object: [[1, 60], [13, 10], [14, 10], [15, 3], [19, 3], [20, 3], [21, 3], [22, 3], [23, 3], [24, 3], [26, 8], [27, 40], [28, 12], [30, 4], [31, 4], [32, 4], [44, 3], [46, 3], [48, 3]] },
+            { world: 13,
+              chest: [[7, 5], [8, 5], [10, 5], [15, 5], [16, 10], [19, 5], [20, 5], [21, 5], [22, 5], [23, 5], [24, 5], [26, 5], [27, 100], [28, 5], [30, 2], [31, 2], [32, 5], [44, 5], [46, 6], [47, 3], [48, 2]],
+              object: [[1, 20], [6, 50], [7, 9], [9, 10], [15, 3], [16, 10], [19, 3], [20, 3], [21, 3], [22, 3], [23, 3], [24, 3], [29, 20], [35, 4], [36, 4], [37, 4], [38, 4], [39, 4], [40, 4], [41, 4], [44, 1], [46, 1], [47, 2], [48, 4]] }
+        ];
+        var BASIC_CARD_IDS = [1, 2, 3, 4, 5, 6, 9, 11, 12, 27, 29, 42];
+        var WORLD_WITHOUT_BASIC_CHEST_CARDS = 10;
+        var RIKU_ONLY_CARD_IDS = [18];
+
+        var WORLD_NAMES = {
+            1: "Traverse Town",
+            2: "Agrabah",
+            3: "Olympus Coliseum",
+            4: "Wonderland",
+            5: "Monstro",
+            6: "Halloween Town",
+            7: "Atlantica",
+            8: "Neverland",
+            9: "Hollow Bastion",
+            10: "100 Acre Wood",
+            11: "Twilight Town",
+            12: "Destiny Islands",
+            13: "Castle Oblivion"
+        };
+        var MAP_CARDS = [
+            { id: 161, name: "Tranquil Darkness" },
+            { id: 162, name: "Teeming Darkness" },
+            { id: 163, name: "Feeble Darkness" },
+            { id: 164, name: "Almighty Darkness" },
+            { id: 165, name: "Sleeping Darkness" },
+            { id: 166, name: "Looming Darkness" },
+            { id: 167, name: "Premium Room" },
+            { id: 168, name: "White Room" },
+            { id: 169, name: "Black Room" },
+            { id: 170, name: "Bottomless Darkness" },
+            { id: 171, name: "Roulette Room" },
+            { id: 172, name: "Martial Waking" },
+            { id: 173, name: "Sorcerous Waking" },
+            { id: 174, name: "Alchemic Waking" },
+            { id: 175, name: "Meeting Ground" },
+            { id: 176, name: "Stagnant Space" },
+            { id: 177, name: "Strong Initiative" },
+            { id: 178, name: "Lasting Daze" },
+            { id: 179, name: "Calm Bounty" },
+            { id: 180, name: "Guarded Trove" },
+            { id: 181, name: "False Bounty" },
+            { id: 182, name: "Moment's Reprieve" },
+            { id: 183, name: "Mingling Worlds" },
+            { id: 184, name: "Moogle Room" }
+        ];
+        var VANILLA_MAP_DROPS = [
+            { world: 1, joker: 0, keyToRewards: 0,
+              map: [[161, 10], [162, 10], [163, 10], [165, 10], [167, 5], [169, 5], [172, 5], [173, 4], [174, 4], [175, 17], [176, 10], [177, 5], [178, 5]] },
+            { world: 2, joker: 4, keyToRewards: 0,
+              map: [[161, 6], [162, 4], [163, 4], [166, 2], [167, 7], [171, 10], [173, 10], [175, 10], [177, 5], [178, 5], [179, 15], [182, 12], [184, 10]] },
+            { world: 3, joker: 4, keyToRewards: 0,
+              map: [[162, 4], [163, 2], [164, 2], [165, 5], [166, 2], [167, 2], [168, 2], [169, 4], [171, 6], [172, 17], [173, 5], [175, 5], [176, 5], [177, 5], [178, 5], [179, 12], [182, 10], [184, 7]] },
+            { world: 4, joker: 4, keyToRewards: 0,
+              map: [[161, 4], [162, 5], [163, 5], [165, 8], [167, 4], [170, 2], [171, 8], [172, 3], [173, 5], [174, 5], [176, 7], [177, 10], [178, 5], [179, 12], [182, 10], [184, 7]] },
+            { world: 5, joker: 4, keyToRewards: 0,
+              map: [[161, 4], [162, 4], [163, 6], [165, 5], [167, 4], [168, 4], [169, 4], [171, 5], [172, 2], [173, 2], [174, 14], [176, 4], [177, 4], [178, 4], [179, 17], [182, 10], [184, 7]] },
+            { world: 6, joker: 4, keyToRewards: 0,
+              map: [[161, 2], [162, 2], [164, 4], [165, 2], [166, 2], [169, 6], [170, 14], [173, 5], [174, 10], [175, 8], [176, 10], [178, 4], [179, 13], [182, 10], [184, 8]] },
+            { world: 7, joker: 4, keyToRewards: 15,
+              map: [[163, 2], [164, 12], [165, 2], [166, 8], [168, 15], [169, 2], [170, 5], [171, 3], [172, 5], [175, 4], [177, 4], [178, 2], [180, 14], [181, 14], [182, 6], [184, 2]] },
+            { world: 8, joker: 4, keyToRewards: 15,
+              map: [[164, 10], [165, 2], [166, 12], [167, 16], [168, 2], [169, 2], [170, 5], [171, 3], [172, 2], [175, 4], [178, 8], [180, 13], [181, 13], [182, 6], [184, 2]] },
+            { world: 9, joker: 4, keyToRewards: 15,
+              map: [[163, 2], [164, 12], [165, 2], [166, 8], [167, 2], [168, 2], [169, 16], [170, 5], [171, 3], [173, 4], [174, 4], [177, 4], [180, 14], [181, 14], [182, 6], [184, 2]] },
+            { world: 11, joker: 4, keyToRewards: 16,
+              map: [[161, 8], [162, 8], [163, 8], [165, 8], [170, 4], [171, 10], [172, 4], [173, 2], [175, 2], [176, 11], [177, 2], [178, 2], [179, 9], [182, 3], [183, 17], [184, 2]] },
+            { world: 12, joker: 4, keyToRewards: 18,
+              map: [[164, 12], [166, 12], [167, 3], [168, 3], [169, 3], [170, 10], [171, 5], [180, 12], [181, 12], [182, 3], [183, 22], [184, 3]] },
+            { world: 13, joker: 4, keyToRewards: 20,
+              map: [[161, 6], [162, 6], [163, 6], [164, 6], [165, 6], [166, 6], [170, 3], [171, 10], [179, 7], [180, 7], [181, 7], [182, 10], [183, 10], [184, 10]] }
+        ];
+        var FIRST_HEARTLESS_CARD = 68;
+        var LAST_HEARTLESS_CARD = 98;
+        var DARKBALL_CARD = 89;
+        var CARD_SLEIGHTS = [
+            { card: 26, name: "Fire", sleights: [13, 20] },
+            { card: 27, name: "Blizzard", sleights: [14, 21] },
+            { card: 28, name: "Thunder", sleights: [15, 22] },
+            { card: 29, name: "Cure", sleights: [16, 23] },
+            { card: 30, name: "Gravity", sleights: [17, 24] },
+            { card: 31, name: "Stop", sleights: [18, 25] },
+            { card: 32, name: "Aero", sleights: [19, 26] },
+            { card: 35, name: "Simba", sleights: [52, 53] },
+            { card: 36, name: "Genie", sleights: [61, 62] },
+            { card: 37, name: "Bambi", sleights: [56, 57] },
+            { card: 38, name: "Dumbo", sleights: [54, 55] },
+            { card: 39, name: "Tinker Bell", sleights: [63, 64] },
+            { card: 40, name: "Mushu", sleights: [59, 60] },
+            { card: 41, name: "Cloud", sleights: [65, 66] }
+        ];
+        var EVENT_SLEIGHTS = [
+            { world: 0, room: 2016, name: "8F Exit Hall", sleights: [38] },
+            { world: 0, room: 2020, name: "10F Exit Hall", sleights: [35] },
+            { world: 0, room: 2001, name: "Entrance hall before 1F", sleights: [68, 69, 71, 72, 73, 74] },
+            { world: 1, room: 2003, name: "Traverse Town story", sleights: [85, 86] },
+            { world: 2, room: 2000, name: "Agrabah story", sleights: [75, 76] },
+            { world: 5, room: 2001, name: "Monstro story", sleights: [90] },
+            { world: 6, room: 2000, name: "Halloween Town story", sleights: [77, 78] },
+            { world: 6, room: 2001, name: "Halloween Town story", sleights: [47] },
+            { world: 7, room: 2002, name: "Atlantica story", sleights: [79, 80] },
+            { world: 8, room: 2000, name: "Neverland story", sleights: [91] },
+            { world: 8, room: 2001, name: "Neverland story", sleights: [81, 82] },
+            { world: 9, room: 2002, name: "Hollow Bastion story", sleights: [83, 84] },
+            { world: 10, room: 2101, name: "100 Acre Wood Piglet", sleights: [46] },
+            { world: 10, room: 2201, name: "100 Acre Wood Balloon Glider", sleights: [32] },
+            { world: 10, room: 2501, name: "100 Acre Wood Jump-a-Thon", sleights: [58] },
+            { world: 10, room: 2601, name: "100 Acre Wood Veggie Panic", sleights: [67] },
+            { world: 13, room: 2000, name: "13F entrance (Castle Oblivion)", sleights: [12] }
+        ];
+        var RANDOM_JOKER_ID = 185;
+        var KEY_TO_REWARDS_ID = 189;
+        var WORLD_WITHOUT_MAP_DROPS = 10;
+        var ODDS_TOTAL = 100;
+        var ALL_WORLDS = "all";
+        var ODDS_STORAGE_KEY = "khrecom-seed-generator-card-odds";
+        var FLOOR_LAYOUTS = [
+            { layout: 1, start: 1, fix: 2, fixExits: [0], cards: [3, 4, 5, 6, 8],
+              specials: [{ id: 7, type: 5, entry: 3 }, { id: 9, type: 6, entry: 0 }, { id: 10, type: 2, entry: 1 }, { id: 11, type: 3, entry: 1 }, { id: 12, type: 4, entry: 1 }] },
+            { layout: 2, start: 1, fix: 2, fixExits: [0, 1, 3], cards: [5, 6, 8],
+              specials: [{ id: 3, type: 2, entry: 1 }, { id: 4, type: 4, entry: 3 }, { id: 7, type: 3, entry: 2 }, { id: 9, type: 6, entry: 2 }, { id: 10, type: 5, entry: 3 }] },
+            { layout: 3, start: 1, fix: 2, fixExits: [1], cards: [3, 6, 9, 10],
+              specials: [{ id: 4, type: 3, entry: 3 }, { id: 5, type: 6, entry: 1 }, { id: 7, type: 2, entry: 0 }, { id: 8, type: 4, entry: 1 }, { id: 11, type: 5, entry: 2 }] },
+            { layout: 4, start: 1, fix: 4, fixExits: [3], cards: [3, 5, 6, 7, 11],
+              specials: [{ id: 2, type: 2, entry: 0 }, { id: 8, type: 3, entry: 3 }, { id: 9, type: 6, entry: 2 }, { id: 10, type: 4, entry: 1 }, { id: 12, type: 5, entry: 3 }] },
+            { layout: 5, start: 1, fix: 3, fixExits: [0, 1], cards: [4, 5, 6, 7, 9, 10],
+              specials: [{ id: 2, type: 3, entry: 0 }, { id: 8, type: 2, entry: 3 }, { id: 11, type: 6, entry: 2 }, { id: 12, type: 5, entry: 2 }, { id: 13, type: 4, entry: 2 }] },
+            { layout: 6, start: 1, fix: 2, fixExits: [1], cards: [4, 5, 6, 8, 10, 11, 13],
+              specials: [{ id: 3, type: 2, entry: 1 }, { id: 7, type: 6, entry: 0 }, { id: 9, type: 3, entry: 0 }, { id: 12, type: 4, entry: 0 }, { id: 14, type: 5, entry: 2 }] },
+            { layout: 7, start: 1, fix: 2, fixExits: [3], cards: [4, 5, 6, 8, 10, 11, 12, 14],
+              specials: [{ id: 3, type: 3, entry: 3 }, { id: 7, type: 2, entry: 1 }, { id: 9, type: 6, entry: 2 }, { id: 13, type: 4, entry: 0 }, { id: 15, type: 5, entry: 2 }] },
+            { layout: 8, start: 1, fix: 4, fixExits: [1], cards: [2, 5, 6, 8, 10, 11, 12, 14],
+              specials: [{ id: 3, type: 3, entry: 0 }, { id: 7, type: 6, entry: 0 }, { id: 9, type: 2, entry: 3 }, { id: 13, type: 5, entry: 1 }, { id: 15, type: 4, entry: 3 }] },
+            { layout: 9, start: 1, fix: 2, fixExits: [0], cards: [3, 5, 6, 8, 9, 11, 12, 14, 15],
+              specials: [{ id: 4, type: 3, entry: 3 }, { id: 7, type: 4, entry: 1 }, { id: 10, type: 5, entry: 3 }, { id: 13, type: 2, entry: 1 }, { id: 16, type: 6, entry: 3 }] },
+            { layout: 10, start: 1, fix: 5, fixExits: [0, 3], cards: [2, 3, 6, 7, 8, 9, 10, 12, 15, 16, 17],
+              specials: [{ id: 4, type: 2, entry: 1 }, { id: 11, type: 3, entry: 3 }, { id: 13, type: 4, entry: 0 }, { id: 14, type: 6, entry: 2 }, { id: 18, type: 5, entry: 2 }] },
+            { layout: 11, start: 1, fix: 5, fixExits: [1], cards: [2, 3, 4, 6, 8, 11],
+              specials: [{ id: 7, type: 6, entry: 1 }, { id: 9, type: 5, entry: 3 }, { id: 10, type: 2, entry: 1 }] },
+            { layout: 12, start: 1, fix: 2, fixExits: [3], cards: [3, 5, 7, 9, 10, 11],
+              specials: [{ id: 4, type: 2, entry: 3 }, { id: 6, type: 6, entry: 0 }, { id: 8, type: 3, entry: 3 }, { id: 12, type: 5, entry: 1 }] }
+        ];
+        var SIDE_NORTH = 0;
+        var SIDE_SOUTH = 2;
+        var SIDE_STEPS = [{ x: 0, y: 1 }, { x: 1, y: 0 }, { x: 0, y: -1 }, { x: -1, y: 0 }];
+        var HOST_DOOR_TYPES = { 2: 1, 3: 2, 4: 3, 5: 5, 6: 6 };
+        var ROOM_LETTERS = { 2: "1", 3: "2", 4: "3", 5: "G", 6: "R" };
+        var GOAL_ROOM = 5;
+        var EXTRA_ROOM = 6;
+        var DOOR_NORMAL = 0;
+        var DOOR_ONE_WAY = 7;
+        var MAX_FLOOR_WIDTH = 6;
+        var MAX_FLOOR_DEPTH = 7;
+        var EXTRA_DOOR_PERCENT = 35;
+        var LAYOUT_TRIES = 2000;
+        var LAST_SHUFFLED_WORLD = 12;
+        var LAST_WORLD = 13;
+        var LAYOUT_GROUPS = [
+            { worlds: [1], layouts: [1] },
+            { worlds: [2, 3, 4, 5, 6], layouts: [2, 3, 4, 5, 6] },
+            { worlds: [7, 8, 9, 10], layouts: [7, 8, 9, 10] },
+            { worlds: [11], layouts: [11] },
+            { worlds: [12], layouts: [12] }
+        ];
+        var WORLD_ENEMIES = [
+            { world: 1, kinds: [1, 2, 3, 4, 16, 17], field: [1, 2, 3, 16, 17] },
+            { world: 2, kinds: [1, 5, 6, 10, 11, 15, 16, 17], field: [1, 5, 10, 16, 17] },
+            { world: 3, kinds: [1, 4, 7, 8, 9, 16, 17], field: [1, 4, 9, 16, 17] },
+            { world: 4, kinds: [1, 2, 3, 9, 16, 17, 30, 31], field: [1, 3, 9, 16, 17] },
+            { world: 5, kinds: [1, 5, 6, 9, 14, 15, 16, 17, 29], field: [1, 5, 9, 16, 17] },
+            { world: 6, kinds: [12, 13, 32, 33, 34, 35, 36], field: [12, 13, 32, 34, 35] },
+            { world: 7, kinds: [1, 14, 16, 17, 18, 19, 20, 23], field: [1, 16, 17, 18, 19, 20] },
+            { world: 8, kinds: [1, 5, 16, 17, 21, 22, 23, 30], field: [1, 5, 16, 17, 23] },
+            { world: 9, kinds: [1, 16, 17, 23, 24, 25, 26, 29], field: [1, 16, 17, 25, 26, 29] },
+            { world: 11, kinds: [1, 2, 15, 16, 17], field: [1, 2, 15, 16, 17] },
+            { world: 12, kinds: [1, 2, 16, 17, 23, 29, 30, 31], field: [1, 16, 17, 23, 29] },
+            { world: 13, kinds: [1, 3, 4, 5, 6, 16, 17, 23, 24, 25, 26, 27], field: [1, 3, 16, 17, 23, 27] }
+        ];
+        var SPECIAL_KIND_NAMES = { 16: "White Mushroom", 34: "White Mushroom (copy)" };
+        var SWAP_KINDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 29, 30, 31];
+        var FIELD_KINDS = [1, 2, 3, 4, 5, 9, 10, 12, 13, 15, 16, 17, 18, 19, 20, 23, 25, 26, 27, 29];
+        var SETTINGS_STORAGE_KEY = "khrecom-seed-generator-settings-2";
+        var SETTING_IDS = [
+            "seed", "starting-deck-mode", "starting-heal", "floor-mode", "heartless-mode", "boss-mode", "boss-scope",
+            "enemy-drop-mode", "enemy-deck-mode", "deck-lowest", "deck-highest", "stat-hp", "stat-attack", "stat-exp",
+            "bounty-mode", "rewards-room-mode", "boss-reward-mode", "level-sleight-mode", "friend-sleight-mode",
+            "story-reward-mode", "drop-mode", "moogle-mode", "card-cp-mode", "card-cp-spread", "card-value-mode",
+            "value-allowed-0", "value-allowed-1", "value-allowed-2", "value-allowed-3", "value-allowed-4",
+            "value-allowed-5", "value-allowed-6", "value-allowed-7", "value-allowed-8", "value-allowed-9",
+            "value-weight-0", "value-weight-1", "value-weight-2", "value-weight-3", "value-weight-4",
+            "value-weight-5", "value-weight-6", "value-weight-7", "value-weight-8", "value-weight-9",
+            "card-value-maps", "card-power-mode", "card-power-lowest", "card-power-highest", "sleight-power-mode",
+            "sleight-power-lowest", "sleight-power-highest", "door-mode", "map-card-mode", "floor-layout-mode",
+            "map-value-mode", "object-chance", "object-cap", "enemy-hp", "enemy-attack", "enemy-exp"
+        ];
+        var LEVERS_FORMAT_VERSION = 1;
+
+        function getBattleCards() {
+            return ATTACK_CARDS.concat(MAGIC_CARDS, SUMMON_CARDS, ITEM_CARDS);
+        }
+
+        function keepSoraCards(cards) {
+            return cards.filter(function (card) { return RIKU_ONLY_CARD_IDS.indexOf(card.id) === -1; });
+        }
+
+        function getSoraBattleCards() {
+            return keepSoraCards(getBattleCards());
+        }
+
+        function getCardName(cardId) {
+            var battleCards = getBattleCards();
+            for (var index = 0; index < battleCards.length; index++) {
+                if (battleCards[index].id === cardId) {
+                    return battleCards[index].name;
+                }
+            }
+            if (ENEMY_CARD_NAMES[cardId] !== undefined) {
+                return ENEMY_CARD_NAMES[cardId] + " (enemy card)";
+            }
+            return "card " + cardId;
+        }
+
+        function getSleightName(sleightId) {
+            for (var index = 0; index < SORA_SLEIGHTS.length; index++) {
+                if (SORA_SLEIGHTS[index].id === sleightId) {
+                    return SORA_SLEIGHTS[index].name;
+                }
+            }
+            if (OTHER_SLEIGHT_NAMES[sleightId] !== undefined) {
+                return OTHER_SLEIGHT_NAMES[sleightId];
+            }
+            return "sleight " + sleightId;
+        }
+
+        function makeRandom(seedText, sectionName) {
+            var text = seedText + ":" + sectionName;
+            var hash = 2166136261;
+            for (var index = 0; index < text.length; index++) {
+                hash = hash ^ text.charCodeAt(index);
+                hash = Math.imul(hash, 16777619) >>> 0;
+            }
+            var state = hash;
+            function nextRandom() {
+                state = (state + 0x6D2B79F5) >>> 0;
+                var mixed = state;
+                mixed = Math.imul(mixed ^ (mixed >>> 15), mixed | 1);
+                mixed = mixed ^ (mixed + Math.imul(mixed ^ (mixed >>> 7), mixed | 61));
+                var result = (mixed ^ (mixed >>> 14)) >>> 0;
+                return result / 4294967296;
+            }
+            return nextRandom;
+        }
+
+        function randomWholeNumber(nextRandom, lowest, highest) {
+            var count = highest - lowest + 1;
+            return lowest + Math.floor(nextRandom() * count);
+        }
+
+        function pickOne(nextRandom, list) {
+            var index = randomWholeNumber(nextRandom, 0, list.length - 1);
+            return list[index];
+        }
+
+        function shuffleList(nextRandom, list) {
+            var shuffled = list.slice();
+            for (var index = shuffled.length - 1; index > 0; index--) {
+                var otherIndex = randomWholeNumber(nextRandom, 0, index);
+                var kept = shuffled[index];
+                shuffled[index] = shuffled[otherIndex];
+                shuffled[otherIndex] = kept;
+            }
+            return shuffled;
+        }
+
+        function getRandomWeights(nextRandom, count, total) {
+            var rawWeights = [];
+            var rawTotal = 0;
+            for (var index = 0; index < count; index++) {
+                var rawWeight = nextRandom() + 0.05;
+                rawWeights.push(rawWeight);
+                rawTotal = rawTotal + rawWeight;
+            }
+            var weights = [];
+            var used = 0;
+            for (var weightIndex = 0; weightIndex < count; weightIndex++) {
+                var weight = Math.floor(rawWeights[weightIndex] / rawTotal * total);
+                weights.push(weight);
+                used = used + weight;
+            }
+            while (used < total) {
+                var luckyIndex = randomWholeNumber(nextRandom, 0, count - 1);
+                weights[luckyIndex] = weights[luckyIndex] + 1;
+                used = used + 1;
+            }
+            return weights;
+        }
+
+        function getElement(id) {
+            return document.getElementById(id);
+        }
+
+        function readNumber(id) {
+            var text = getElement(id).value.trim();
+            if (text === "") {
+                return null;
+            }
+            return Number(text);
+        }
+
+        function isWholeNumberBetween(value, lowest, highest) {
+            if (value === null || isNaN(value)) {
+                return false;
+            }
+            if (Math.floor(value) !== value) {
+                return false;
+            }
+            return value >= lowest && value <= highest;
+        }
+
+        function isNumberBetween(value, lowest, highest) {
+            if (value === null || isNaN(value)) {
+                return false;
+            }
+            return value >= lowest && value <= highest;
+        }
+
+        function makeRandomDeck(nextRandom, cardCount, lowest, highest) {
+            var counts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            for (var card = 0; card < cardCount; card++) {
+                var value = randomWholeNumber(nextRandom, lowest, highest);
+                counts[value] = counts[value] + 1;
+            }
+            return counts;
+        }
+
+        function describeDeck(counts) {
+            var values = [];
+            for (var value = 0; value < counts.length; value++) {
+                for (var copy = 0; copy < counts[value]; copy++) {
+                    values.push(value);
+                }
+            }
+            return values.join(" ");
+        }
+
+        function getOppositeSide(side) {
+            return (side + 2) % 4;
+        }
+
+        function getCellKey(x, y) {
+            return x + "," + y;
+        }
+
+        function makeEmptyDoors() {
+            return [0, 1, 2, 3].map(function () {
+                return { destination: 0, type: DOOR_NORMAL };
+            });
+        }
+
+        function placeRoom(plan, id, type, x, y) {
+            var room = { id: id, type: type, x: x, y: y, doors: makeEmptyDoors(), usedSides: [] };
+            plan.rooms.push(room);
+            plan.cells[getCellKey(x, y)] = room;
+            return room;
+        }
+
+        function getFreeCell(plan, room, side) {
+            var x = room.x + SIDE_STEPS[side].x;
+            var y = room.y + SIDE_STEPS[side].y;
+            if (plan.cells[getCellKey(x, y)] !== undefined) {
+                return null;
+            }
+            var xs = plan.rooms.map(function (placed) { return placed.x; }).concat([x]);
+            var ys = plan.rooms.map(function (placed) { return placed.y; }).concat([y]);
+            if (Math.max.apply(null, xs) - Math.min.apply(null, xs) >= MAX_FLOOR_WIDTH) {
+                return null;
+            }
+            if (Math.max.apply(null, ys) - Math.min.apply(null, ys) >= MAX_FLOOR_DEPTH) {
+                return null;
+            }
+            return { x: x, y: y };
+        }
+
+        function isSideOpen(room, side) {
+            if (room.allowedSides !== undefined && room.allowedSides.indexOf(side) === -1) {
+                return false;
+            }
+            return room.usedSides.indexOf(side) === -1;
+        }
+
+        function setDoor(room, side, destination, type) {
+            room.doors[side] = { destination: destination, type: type };
+            room.usedSides.push(side);
+        }
+
+        function connectRooms(room, side, otherRoom) {
+            setDoor(room, side, otherRoom.id, DOOR_NORMAL);
+            setDoor(otherRoom, getOppositeSide(side), room.id, DOOR_NORMAL);
+        }
+
+        function listOpenSpots(plan, rooms, sides) {
+            var spots = [];
+            rooms.forEach(function (room) {
+                sides.forEach(function (side) {
+                    if (!isSideOpen(room, side)) {
+                        return;
+                    }
+                    var cell = getFreeCell(plan, room, side);
+                    if (cell !== null) {
+                        spots.push({ room: room, side: side, cell: cell });
+                    }
+                });
+            });
+            return spots;
+        }
+
+        function placeCards(plan, nextRandom, layout) {
+            var cards = shuffleList(nextRandom, layout.cards);
+            for (var index = 0; index < cards.length; index++) {
+                var spots = listOpenSpots(plan, plan.mainRooms, [0, 1, 2, 3]);
+                if (spots.length === 0) {
+                    return false;
+                }
+                var spot = pickOne(nextRandom, spots);
+                var card = placeRoom(plan, cards[index], 0, spot.cell.x, spot.cell.y);
+                connectRooms(spot.room, spot.side, card);
+                plan.mainRooms.push(card);
+            }
+            return true;
+        }
+
+        function placeSpecials(plan, nextRandom, layout) {
+            var specials = shuffleList(nextRandom, layout.specials);
+            for (var index = 0; index < specials.length; index++) {
+                var special = specials[index];
+                var spots = listOpenSpots(plan, plan.mainRooms, [getOppositeSide(special.entry)]);
+                if (spots.length === 0) {
+                    return false;
+                }
+                var spot = pickOne(nextRandom, spots);
+                var room = placeRoom(plan, special.id, special.type, spot.cell.x, spot.cell.y);
+                setDoor(spot.room, spot.side, room.id, HOST_DOOR_TYPES[special.type]);
+                if (special.type === GOAL_ROOM || special.type === EXTRA_ROOM) {
+                    setDoor(room, special.entry, spot.room.id, DOOR_NORMAL);
+                } else {
+                    setDoor(room, special.entry, 0, DOOR_ONE_WAY);
+                }
+            }
+            return true;
+        }
+
+        function addExtraDoors(plan, nextRandom) {
+            plan.mainRooms.forEach(function (room) {
+                for (var side = 0; side < 2; side++) {
+                    var other = plan.cells[getCellKey(room.x + SIDE_STEPS[side].x, room.y + SIDE_STEPS[side].y)];
+                    if (other === undefined || plan.mainRooms.indexOf(other) === -1) {
+                        continue;
+                    }
+                    if (!isSideOpen(room, side) || !isSideOpen(other, getOppositeSide(side))) {
+                        continue;
+                    }
+                    if (randomWholeNumber(nextRandom, 1, 100) <= EXTRA_DOOR_PERCENT) {
+                        connectRooms(room, side, other);
+                    }
+                }
+            });
+        }
+
+        function moveToCorner(plan) {
+            var lowestX = Math.min.apply(null, plan.rooms.map(function (room) { return room.x; }));
+            var lowestY = Math.min.apply(null, plan.rooms.map(function (room) { return room.y; }));
+            plan.rooms.forEach(function (room) {
+                room.x = room.x - lowestX;
+                room.y = room.y - lowestY;
+            });
+            plan.width = Math.max.apply(null, plan.rooms.map(function (room) { return room.x; })) + 1;
+            plan.depth = Math.max.apply(null, plan.rooms.map(function (room) { return room.y; })) + 1;
+        }
+
+        function tryFloorPlan(nextRandom, layout) {
+            var plan = { rooms: [], cells: {}, mainRooms: [] };
+            var start = placeRoom(plan, layout.start, 1, 0, 0);
+            var fix = placeRoom(plan, layout.fix, 8, 0, 1);
+            fix.allowedSides = layout.fixExits;
+            setDoor(start, SIDE_NORTH, fix.id, DOOR_NORMAL);
+            setDoor(fix, SIDE_SOUTH, 0, DOOR_ONE_WAY);
+            plan.mainRooms.push(fix);
+            if (!placeCards(plan, nextRandom, layout)) {
+                return null;
+            }
+            if (!placeSpecials(plan, nextRandom, layout)) {
+                return null;
+            }
+            addExtraDoors(plan, nextRandom);
+            moveToCorner(plan);
+            return plan;
+        }
+
+        function makeFloorPlan(nextRandom, layout) {
+            for (var attempt = 0; attempt < LAYOUT_TRIES; attempt++) {
+                var plan = tryFloorPlan(nextRandom, layout);
+                if (plan !== null) {
+                    return plan;
+                }
+            }
+            return null;
+        }
+
+        function getDoorMark(room, side, other, mark) {
+            if (areConnected(room, side, other)) {
+                return mark;
+            }
+            return " ";
+        }
+
+        function getRoomLetter(room) {
+            if (room === undefined) {
+                return " ";
+            }
+            if (room.type === 0) {
+                return "o";
+            }
+            if (room.type === 1) {
+                return "S";
+            }
+            if (room.type === 8) {
+                return "F";
+            }
+            return ROOM_LETTERS[room.type];
+        }
+
+        function drawFloorPlan(plan) {
+            var cells = {};
+            plan.rooms.forEach(function (room) { cells[getCellKey(room.x, room.y)] = room; });
+            var lines = [];
+            for (var y = plan.depth - 1; y >= 0; y--) {
+                var roomLine = "      ";
+                var doorLine = "      ";
+                for (var x = 0; x < plan.width; x++) {
+                    var room = cells[getCellKey(x, y)];
+                    var east = cells[getCellKey(x + 1, y)];
+                    var south = cells[getCellKey(x, y - 1)];
+                    roomLine = roomLine + getRoomLetter(room) + getDoorMark(room, 1, east, "-");
+                    doorLine = doorLine + getDoorMark(room, 2, south, "|") + " ";
+                }
+                lines.push(roomLine);
+                if (y > 0) {
+                    lines.push(doorLine);
+                }
+            }
+            return lines;
+        }
+
+        function areConnected(room, side, other) {
+            if (room === undefined || other === undefined) {
+                return false;
+            }
+            return room.doors[side].destination === other.id || other.doors[getOppositeSide(side)].destination === room.id;
+        }
+
+        function getLayout(layoutNumber) {
+            return FLOOR_LAYOUTS[layoutNumber - 1];
+        }
+
+        function makeVanillaLayoutOrder() {
+            return FLOOR_LAYOUTS.map(function (layout) { return layout.layout; });
+        }
+
+        function makeLayoutOrder(settings, worldOrder) {
+            var nextRandom = makeRandom(settings.seed, "layout order");
+            var layoutByWorld = {};
+            LAYOUT_GROUPS.forEach(function (group) {
+                var layouts = shuffleList(nextRandom, group.layouts);
+                group.worlds.forEach(function (worldId, index) { layoutByWorld[worldId] = layouts[index]; });
+            });
+            return worldOrder.slice(0, LAST_SHUFFLED_WORLD).map(function (worldId) { return layoutByWorld[worldId]; });
+        }
+
+        function getDoorLever(door) {
+            return { destination: door.destination, type: door.type, check_event: 0 };
+        }
+
+        function buildFloorLayouts(settings, levers, spoiler) {
+            if (settings.floorLayoutMode !== "yes") {
+                return;
+            }
+            var layoutOrder = levers.floor_layout_order;
+            if (layoutOrder === undefined) {
+                layoutOrder = makeVanillaLayoutOrder();
+            }
+            levers.floor_layouts = [];
+            spoiler.push("Floor layouts (S start, F first room, o card room, 1 2 3 event rooms, G goal, R Room of Rewards)");
+            layoutOrder.forEach(function (layoutNumber, index) {
+                var floor = index + 1;
+                var plan = makeFloorPlan(makeRandom(settings.seed, "floor layout " + layoutNumber), getLayout(layoutNumber));
+                if (plan === null) {
+                    spoiler.push("  Floor " + floor + ": vanilla");
+                    return;
+                }
+                var rooms = plan.rooms.map(function (room) {
+                    return { id: room.id, x: room.x, y: room.y, doors: room.doors.map(getDoorLever) };
+                });
+                rooms.sort(function (first, second) { return first.id - second.id; });
+                levers.floor_layouts.push({ floor: floor, width: plan.width, depth: plan.depth, rooms: rooms });
+                if (levers.world_order !== undefined && levers.world_order[index] === 10) {
+                    spoiler.push("  Floor " + floor + ": 100 Acre Wood uses its own layout");
+                    return;
+                }
+                spoiler.push("  Floor " + floor);
+                drawFloorPlan(plan).forEach(function (line) { spoiler.push(line); });
+            });
+            spoiler.push("");
+        }
+
+        function getEnemyKindName(kind) {
+            var known = HEARTLESS_DECKS.concat(BOSS_DECKS);
+            for (var index = 0; index < known.length; index++) {
+                if (known[index].kind === kind) {
+                    return known[index].name;
+                }
+            }
+            if (SPECIAL_KIND_NAMES[kind] !== undefined) {
+                return SPECIAL_KIND_NAMES[kind];
+            }
+            return "enemy kind " + kind;
+        }
+
+        function getAllowedKinds(worldEnemies, kind) {
+            if (worldEnemies.field.indexOf(kind) !== -1) {
+                return FIELD_KINDS;
+            }
+            return SWAP_KINDS;
+        }
+
+        function isKindInSwaps(worldSwaps, kind) {
+            return worldSwaps.swaps.some(function (swap) { return swap.to === kind; });
+        }
+
+        function makeWorldSwaps(nextRandom, worldEnemies) {
+            var worldSwaps = { world: worldEnemies.world, swaps: [] };
+            var ordered = worldEnemies.field.concat(worldEnemies.kinds.filter(function (kind) {
+                return worldEnemies.field.indexOf(kind) === -1;
+            }));
+            ordered.forEach(function (kind) {
+                var choices = getAllowedKinds(worldEnemies, kind).filter(function (choice) {
+                    return !isKindInSwaps(worldSwaps, choice);
+                });
+                worldSwaps.swaps.push({ from: kind, to: pickOne(nextRandom, choices) });
+            });
+            return worldSwaps;
+        }
+
+        function countKind(allSwaps, kind) {
+            var count = 0;
+            allSwaps.forEach(function (worldSwaps) {
+                worldSwaps.swaps.forEach(function (swap) {
+                    if (swap.to === kind) {
+                        count = count + 1;
+                    }
+                });
+            });
+            return count;
+        }
+
+        function addMissingKind(nextRandom, allSwaps, missingKind) {
+            var choices = [];
+            allSwaps.forEach(function (worldSwaps, index) {
+                if (isKindInSwaps(worldSwaps, missingKind)) {
+                    return;
+                }
+                worldSwaps.swaps.forEach(function (swap) {
+                    var isAllowed = getAllowedKinds(WORLD_ENEMIES[index], swap.from).indexOf(missingKind) !== -1;
+                    if (isAllowed && countKind(allSwaps, swap.to) > 1) {
+                        choices.push(swap);
+                    }
+                });
+            });
+            if (choices.length > 0) {
+                pickOne(nextRandom, choices).to = missingKind;
+            }
+        }
+
+        function buildEnemySwaps(settings, levers, spoiler) {
+            if (!settings.heartless) {
+                return;
+            }
+            var nextRandom = makeRandom(settings.seed, "enemy swaps");
+            levers.enemy_swaps = WORLD_ENEMIES.map(function (worldEnemies) {
+                return makeWorldSwaps(nextRandom, worldEnemies);
+            });
+            SWAP_KINDS.forEach(function (kind) {
+                if (countKind(levers.enemy_swaps, kind) === 0) {
+                    addMissingKind(nextRandom, levers.enemy_swaps, kind);
+                }
+            });
+            spoiler.push("Enemies");
+            levers.enemy_swaps.forEach(function (worldSwaps) {
+                var texts = worldSwaps.swaps.map(function (swap) {
+                    return getEnemyKindName(swap.from) + " -> " + getEnemyKindName(swap.to);
+                });
+                spoiler.push("  " + WORLD_NAMES[worldSwaps.world] + ": " + texts.join(", "));
+            });
+            spoiler.push("");
+        }
+
+        function describeChest(chest) {
+            var placeName = "Room of Rewards";
+            if (chest.list === "bounties") {
+                placeName = "Bounty";
+            }
+            return WORLD_NAMES[chest.world] + " " + placeName + " chest " + chest.chest;
+        }
+
+        function isBasicCard(cardId) {
+            return BASIC_CARD_IDS.indexOf(cardId) !== -1;
+        }
+
+        function copyVanillaList(worldId, listName) {
+            for (var index = 0; index < VANILLA_DROP_LISTS.length; index++) {
+                if (VANILLA_DROP_LISTS[index].world === worldId) {
+                    return VANILLA_DROP_LISTS[index][listName].map(function (pair) {
+                        return { card: pair[0], weight: pair[1] };
+                    });
+                }
+            }
+            return [];
+        }
+
+        function countCopies(cards, cardId) {
+            var copies = 0;
+            for (var index = 0; index < cards.length; index++) {
+                if (cards[index] === cardId) {
+                    copies = copies + 1;
+                }
+            }
+            return copies;
+        }
+
+        function findMostCommonUnusedCard(remainingCards, usedCards) {
+            var bestIndex = 0;
+            var bestCopies = -1;
+            for (var index = 0; index < remainingCards.length; index++) {
+                var cardId = remainingCards[index];
+                if (usedCards.indexOf(cardId) === -1) {
+                    var copies = countCopies(remainingCards, cardId);
+                    if (copies > bestCopies) {
+                        bestCopies = copies;
+                        bestIndex = index;
+                    }
+                }
+            }
+            return bestIndex;
+        }
+
+        function shuffleSpecialCards(nextRandom, listsByWorld) {
+            var specialCards = [];
+            for (var worldIndex = 0; worldIndex < listsByWorld.length; worldIndex++) {
+                var entries = listsByWorld[worldIndex].entries;
+                for (var entryIndex = 0; entryIndex < entries.length; entryIndex++) {
+                    if (!isBasicCard(entries[entryIndex].card)) {
+                        specialCards.push(entries[entryIndex].card);
+                    }
+                }
+            }
+            var remainingCards = shuffleList(nextRandom, specialCards);
+            for (var listIndex = 0; listIndex < listsByWorld.length; listIndex++) {
+                var listEntries = listsByWorld[listIndex].entries;
+                var usedCards = [];
+                for (var slot = 0; slot < listEntries.length; slot++) {
+                    if (!isBasicCard(listEntries[slot].card)) {
+                        var pickedIndex = findMostCommonUnusedCard(remainingCards, usedCards);
+                        listEntries[slot].card = remainingCards[pickedIndex];
+                        usedCards.push(remainingCards[pickedIndex]);
+                        remainingCards.splice(pickedIndex, 1);
+                    }
+                }
+            }
+        }
+
+        function describeDropList(entries) {
+            return entries.map(function (entry) {
+                return getCardName(entry.card) + " " + entry.weight;
+            }).join(", ");
+        }
+
+        function getWorldDropEntry(levers, worldId) {
+            if (levers.world_drops === undefined) {
+                levers.world_drops = [];
+            }
+            for (var index = 0; index < levers.world_drops.length; index++) {
+                if (levers.world_drops[index].world === worldId) {
+                    return levers.world_drops[index];
+                }
+            }
+            var entry = { world: worldId };
+            levers.world_drops.push(entry);
+            return entry;
+        }
+
+        var cardOdds = {};
+
+        function makeRandomOdds(nextRandom, cards, cardCount) {
+            var shuffledCards = shuffleList(nextRandom, cards);
+            var keptCards = shuffledCards;
+            if (cardCount !== null) {
+                keptCards = shuffledCards.slice(0, cardCount);
+            }
+            var entries = keptCards.map(function (card) {
+                return { card: card.id, weight: randomWholeNumber(nextRandom, 1, 100) };
+            });
+            entries.sort(function (first, second) { return first.card - second.card; });
+            return scaleToHundred(entries);
+        }
+
+        function makeRandomRates(nextRandom) {
+            var rates = {};
+            rates[RANDOM_JOKER_ID] = randomWholeNumber(nextRandom, 1, 10);
+            rates[KEY_TO_REWARDS_ID] = randomWholeNumber(nextRandom, 1, 30);
+            return rates;
+        }
+
+        function getWorldIds() {
+            return VANILLA_DROP_LISTS.map(function (lists) { return lists.world; });
+        }
+
+        function getListWeightTotal(entries) {
+            var total = 0;
+            for (var index = 0; index < entries.length; index++) {
+                total = total + entries[index].weight;
+            }
+            return total;
+        }
+
+        function findLargestWeightIndex(entries) {
+            var largestIndex = 0;
+            for (var index = 1; index < entries.length; index++) {
+                if (entries[index].weight > entries[largestIndex].weight) {
+                    largestIndex = index;
+                }
+            }
+            return largestIndex;
+        }
+
+        function scaleToHundred(entries) {
+            var kept = entries.filter(function (entry) { return entry.weight > 0; });
+            var total = getListWeightTotal(kept);
+            var scaled = kept.map(function (entry) {
+                var percent = entry.weight * ODDS_TOTAL / total;
+                var whole = Math.max(1, Math.floor(percent));
+                return { card: entry.card, weight: whole, missing: percent - whole };
+            });
+            while (getListWeightTotal(scaled) < ODDS_TOTAL) {
+                var nextIndex = 0;
+                for (var index = 1; index < scaled.length; index++) {
+                    if (scaled[index].missing > scaled[nextIndex].missing) {
+                        nextIndex = index;
+                    }
+                }
+                scaled[nextIndex].weight = scaled[nextIndex].weight + 1;
+                scaled[nextIndex].missing = scaled[nextIndex].missing - 1;
+            }
+            while (getListWeightTotal(scaled) > ODDS_TOTAL) {
+                var largestIndex = findLargestWeightIndex(scaled);
+                scaled[largestIndex].weight = scaled[largestIndex].weight - 1;
+            }
+            return scaled.map(function (entry) { return { card: entry.card, weight: entry.weight }; });
+        }
+
+        function makeOneRollList(entries) {
+            var specialTotal = 0;
+            var basicTotal = 0;
+            for (var index = 0; index < entries.length; index++) {
+                if (isBasicCard(entries[index].card)) {
+                    basicTotal = basicTotal + entries[index].weight;
+                } else {
+                    specialTotal = specialTotal + entries[index].weight;
+                }
+            }
+            var basicShare = Math.max(0, ODDS_TOTAL - specialTotal);
+            var oneRollEntries = entries.map(function (entry) {
+                if (!isBasicCard(entry.card)) {
+                    return { card: entry.card, weight: entry.weight };
+                }
+                return { card: entry.card, weight: entry.weight * basicShare / basicTotal };
+            });
+            return scaleToHundred(oneRollEntries);
+        }
+
+        function getVanillaMapDrops(worldId) {
+            for (var index = 0; index < VANILLA_MAP_DROPS.length; index++) {
+                if (VANILLA_MAP_DROPS[index].world === worldId) {
+                    return VANILLA_MAP_DROPS[index];
+                }
+            }
+            return null;
+        }
+
+        function makeOddsTable(entries) {
+            var table = {};
+            for (var index = 0; index < entries.length; index++) {
+                table[entries[index].card] = entries[index].weight;
+            }
+            return table;
+        }
+
+        function makeVanillaOdds(worldId) {
+            var odds = {
+                chest: makeOddsTable(makeOneRollList(copyVanillaList(worldId, "chest"))),
+                object: makeOddsTable(makeOneRollList(copyVanillaList(worldId, "object"))),
+                map: {},
+                rates: {}
+            };
+            var mapDrops = getVanillaMapDrops(worldId);
+            if (mapDrops !== null) {
+                for (var index = 0; index < mapDrops.map.length; index++) {
+                    odds.map[mapDrops.map[index][0]] = mapDrops.map[index][1];
+                }
+                odds.rates[RANDOM_JOKER_ID] = mapDrops.joker;
+                odds.rates[KEY_TO_REWARDS_ID] = mapDrops.keyToRewards;
+            }
+            return odds;
+        }
+
+        function resetWorldOdds(worldId) {
+            cardOdds[worldId] = makeVanillaOdds(worldId);
+        }
+
+        function resetAllOdds() {
+            getWorldIds().forEach(resetWorldOdds);
+        }
+
+        function getOdds(worldId, listName, cardId) {
+            var odds = cardOdds[worldId][listName][cardId];
+            if (odds === undefined) {
+                return 0;
+            }
+            return odds;
+        }
+
+        function getOddsCards(listName) {
+            if (listName === "map") {
+                return MAP_CARDS;
+            }
+            return getSoraBattleCards();
+        }
+
+        function getOddsEntries(worldId, listName) {
+            return getOddsCards(listName).map(function (card) {
+                return { card: card.id, weight: getOdds(worldId, listName, card.id) };
+            });
+        }
+
+        function hasList(worldId, listName) {
+            if (listName === "map" || listName === "rates") {
+                return worldId !== WORLD_WITHOUT_MAP_DROPS;
+            }
+            return true;
+        }
+
+        function findOddsProblem(settings) {
+            var lists = getOwnOddsLists(settings);
+            var worldIds = getWorldIds();
+            for (var listIndex = 0; listIndex < lists.length; listIndex++) {
+                for (var worldIndex = 0; worldIndex < worldIds.length; worldIndex++) {
+                    var worldId = worldIds[worldIndex];
+                    var list = lists[listIndex];
+                    if (hasList(worldId, list.name) && getListWeightTotal(getOddsEntries(worldId, list.name)) === 0) {
+                        return WORLD_NAMES[worldId] + " needs at least one " + list.title + " card above 0.";
+                    }
+                }
+            }
+            return null;
+        }
+
+        function getMapCardName(cardId) {
+            for (var index = 0; index < MAP_CARDS.length; index++) {
+                if (MAP_CARDS[index].id === cardId) {
+                    return MAP_CARDS[index].name;
+                }
+            }
+            return "map card " + cardId;
+        }
+
+        function getWorldOddsEntry(levers, worldId) {
+            if (levers.card_odds === undefined) {
+                levers.card_odds = [];
+            }
+            for (var index = 0; index < levers.card_odds.length; index++) {
+                if (levers.card_odds[index].world === worldId) {
+                    return levers.card_odds[index];
+                }
+            }
+            var entry = { world: worldId };
+            levers.card_odds.push(entry);
+            return entry;
+        }
+
+        function saveOdds() {
+            try {
+                localStorage.setItem(ODDS_STORAGE_KEY, JSON.stringify(cardOdds));
+            } catch (error) {
+                return;
+            }
+        }
+
+        function isSavedOddsTable(table) {
+            return table !== null && typeof table === "object";
+        }
+
+        function copySavedTable(table) {
+            var copy = {};
+            Object.keys(table).forEach(function (cardId) {
+                if (isWholeNumberBetween(table[cardId], 0, 1000)) {
+                    copy[cardId] = table[cardId];
+                }
+            });
+            return copy;
+        }
+
+        function loadOdds() {
+            resetAllOdds();
+            var saved = null;
+            try {
+                saved = JSON.parse(localStorage.getItem(ODDS_STORAGE_KEY));
+            } catch (error) {
+                saved = null;
+            }
+            if (!isSavedOddsTable(saved)) {
+                return;
+            }
+            getWorldIds().forEach(function (worldId) {
+                var savedWorld = saved[worldId];
+                if (!isSavedOddsTable(savedWorld)) {
+                    return;
+                }
+                Object.keys(cardOdds[worldId]).forEach(function (listName) {
+                    if (isSavedOddsTable(savedWorld[listName])) {
+                        cardOdds[worldId][listName] = copySavedTable(savedWorld[listName]);
+                    }
+                });
+            });
+        }
+
+        function getChosenWorldIds(listName) {
+            var chosen = getElement("odds-world").value;
+            var worldIds = getWorldIds();
+            if (chosen !== ALL_WORLDS) {
+                worldIds = [Number(chosen)];
+            }
+            return worldIds.filter(function (worldId) { return hasList(worldId, listName); });
+        }
+
+        function getOddsInputId(listName, cardId) {
+            return "odds-" + listName + "-" + cardId;
+        }
+
+        function readOddsInput(listName, cardId) {
+            var input = getElement(getOddsInputId(listName, cardId));
+            var highest = 1000;
+            if (listName === "rates") {
+                highest = 100;
+            }
+            var value = Number(input.value);
+            if (input.value.trim() === "" || !isWholeNumberBetween(value, 0, highest)) {
+                showOdds();
+                showMessage("Odds must be whole numbers from 0 to " + highest + ".", "error");
+                return;
+            }
+            getChosenWorldIds(listName).forEach(function (worldId) {
+                cardOdds[worldId][listName][cardId] = value;
+            });
+            saveOdds();
+            showOdds();
+            showMessage("", "");
+        }
+
+        function showOddsInput(listName, cardId) {
+            var input = getElement(getOddsInputId(listName, cardId));
+            var worldIds = getChosenWorldIds(listName);
+            input.value = "";
+            input.placeholder = "";
+            input.disabled = worldIds.length === 0 || !isOddsListOn(listName);
+            if (worldIds.length === 0) {
+                return;
+            }
+            var firstOdds = getOdds(worldIds[0], listName, cardId);
+            var allSame = worldIds.every(function (worldId) {
+                return getOdds(worldId, listName, cardId) === firstOdds;
+            });
+            if (allSame) {
+                input.value = String(firstOdds);
+            } else {
+                input.placeholder = "mixed";
+            }
+        }
+
+        function describeTotal(listName) {
+            if (!isOddsListOn(listName)) {
+                return "off";
+            }
+            var worldIds = getChosenWorldIds(listName);
+            if (worldIds.length === 0) {
+                return "no drops here";
+            }
+            var totals = worldIds.map(function (worldId) {
+                return getListWeightTotal(getOddsEntries(worldId, listName));
+            });
+            var lowest = Math.min.apply(null, totals);
+            var highest = Math.max.apply(null, totals);
+            if (lowest === ODDS_TOTAL && highest === ODDS_TOTAL) {
+                return "100%";
+            }
+            if (lowest === 0) {
+                return "every world needs a card above 0";
+            }
+            if (lowest === highest) {
+                return lowest + ", scaled to 100%";
+            }
+            return lowest + " to " + highest + ", scaled to 100%";
+        }
+
+        function makeOddsInput(listName, card, label) {
+            var input = document.createElement("input");
+            input.type = "number";
+            input.min = "0";
+            input.max = "1000";
+            input.step = "1";
+            input.id = getOddsInputId(listName, card.id);
+            input.setAttribute("aria-label", card.name + " " + label);
+            input.addEventListener("change", function () { readOddsInput(listName, card.id); });
+            return input;
+        }
+
+        function addOddsRow(tableBody, card, columns) {
+            var row = document.createElement("tr");
+            var nameCell = document.createElement("th");
+            nameCell.scope = "row";
+            nameCell.textContent = card.name;
+            row.appendChild(nameCell);
+            columns.forEach(function (column) {
+                var cell = document.createElement("td");
+                cell.appendChild(makeOddsInput(column.list, card, column.label));
+                row.appendChild(cell);
+            });
+            tableBody.appendChild(row);
+        }
+
+        function makeOddsTables() {
+            var battleColumns = [{ list: "chest", label: "chest odds" }, { list: "object", label: "object odds" }];
+            getSoraBattleCards().forEach(function (card) {
+                addOddsRow(getElement("odds-battle-rows"), card, battleColumns);
+            });
+            MAP_CARDS.forEach(function (card) {
+                addOddsRow(getElement("odds-map-rows"), card, [{ list: "map", label: "enemy drop odds" }]);
+            });
+            var rateColumns = [{ list: "rates", label: "chance" }];
+            addOddsRow(getElement("odds-rate-rows"), { id: RANDOM_JOKER_ID, name: "Random Joker" }, rateColumns);
+            addOddsRow(getElement("odds-rate-rows"), { id: KEY_TO_REWARDS_ID, name: "Key to Rewards" }, rateColumns);
+            var worldSelect = getElement("odds-world");
+            var allOption = document.createElement("option");
+            allOption.value = ALL_WORLDS;
+            allOption.textContent = "All worlds";
+            worldSelect.appendChild(allOption);
+            getWorldIds().forEach(function (worldId) {
+                var option = document.createElement("option");
+                option.value = String(worldId);
+                option.textContent = WORLD_NAMES[worldId];
+                worldSelect.appendChild(option);
+            });
+            worldSelect.value = "1";
+        }
+
+        function getActiveOddsLists() {
+            return ["chest", "object", "map", "rates"].filter(isOddsListOn);
+        }
+
+        function finishOddsChange() {
+            saveOdds();
+            showOdds();
+            showMessage("", "");
+        }
+
+        function resetChosenOdds() {
+            getActiveOddsLists().forEach(function (listName) {
+                getChosenWorldIds(listName).forEach(function (worldId) {
+                    cardOdds[worldId][listName] = makeVanillaOdds(worldId)[listName];
+                });
+            });
+            finishOddsChange();
+        }
+
+        function clearChosenOdds() {
+            getActiveOddsLists().forEach(function (listName) {
+                getChosenWorldIds(listName).forEach(function (worldId) {
+                    cardOdds[worldId][listName] = {};
+                });
+            });
+            finishOddsChange();
+        }
+
+        function copyChosenOdds() {
+            getActiveOddsLists().forEach(function (listName) {
+                var chosenWorlds = getChosenWorldIds(listName);
+                if (chosenWorlds.length !== 1) {
+                    return;
+                }
+                var source = cardOdds[chosenWorlds[0]][listName];
+                getWorldIds().forEach(function (worldId) {
+                    if (hasList(worldId, listName)) {
+                        cardOdds[worldId][listName] = copySavedTable(source);
+                    }
+                });
+            });
+            finishOddsChange();
+        }
+
+        function getMapValueWeights(settings, nextRandom) {
+            var weights = VANILLA_MAP_VALUE_WEIGHTS;
+            if (settings.mapValueMode === "even") {
+                weights = EVEN_VALUE_WEIGHTS;
+            }
+            if (settings.mapValueMode === "random") {
+                weights = getRandomWeights(nextRandom, 10, 100);
+            }
+            if (settings.cardValueMaps) {
+                return limitValueWeights(settings, weights);
+            }
+            return weights;
+        }
+
+        function addMapValues(settings, levers, lines) {
+            var areMapValuesLimited = areValuesLimited(settings) && settings.cardValueMaps;
+            if (settings.mapValueMode === "vanilla" && !areMapValuesLimited) {
+                return;
+            }
+            var nextRandom = makeRandom(settings.seed, "map card values");
+            getWorldIds().forEach(function (worldId) {
+                if (!hasList(worldId, "map")) {
+                    return;
+                }
+                var weights = getMapValueWeights(settings, nextRandom);
+                getWorldDropEntry(levers, worldId).map_card_value_weights = weights;
+                lines.push("  " + WORLD_NAMES[worldId] + " map card value weights 0 to 9: " + weights.join(" "));
+            });
+        }
+
+        function buildCardDrops(settings, levers, spoiler) {
+            var lines = [];
+            var objectChance = settings.objectChance;
+            addMapValues(settings, levers, lines);
+            if (areValuesLimited(settings)) {
+                levers.chest_card_value_weights = limitValueWeights(settings, VANILLA_CHEST_VALUE_WEIGHTS);
+                lines.push("  Chests and objects, card value weights 0 to 9: " + levers.chest_card_value_weights.join(" "));
+            }
+            if (objectChance !== null) {
+                levers.object_card_chance = objectChance;
+                lines.push("  Object card chance: " + objectChance + "%");
+            }
+            if (settings.objectCap !== null) {
+                levers.object_card_room_cap = settings.objectCap;
+                lines.push("  Object cards per room: " + settings.objectCap);
+            }
+            if (lines.length === 0) {
+                return;
+            }
+            spoiler.push("Card drops");
+            for (var index = 0; index < lines.length; index++) {
+                spoiler.push(lines[index]);
+            }
+            spoiler.push("");
+        }
+
+        var STARTING_DECK_SIZE = 13;
+        var STARTING_CP = 275;
+        var CURE_CARD = 29;
+        var HEALING_CARDS = [29, 37, 39, 81, 93, 94, 106, 113];
+        var HEALING_ENEMY_CARDS = [
+            { id: 81, name: "Search Ghost", cp: 35 },
+            { id: 93, name: "Neoshadow", cp: 30 },
+            { id: 94, name: "White Mushroom", cp: 40 },
+            { id: 106, name: "Oogie Boogie", cp: 40 },
+            { id: 113, name: "Vexen", cp: 60 }
+        ];
+        var ATTACK_CARD_PERCENT = 55;
+        var STARTING_DECK_TRIES = 20;
+        var STARTING_DECK_CHANGES = 500;
+        var RANDOM_LIST_SIZE = 13;
+        var CARD_VALUE_COUNT = 10;
+        var CHEAP_VALUE_COUNT = 4;
+        var EVEN_VALUE_WEIGHTS = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10];
+        var VANILLA_CHEST_VALUE_WEIGHTS = [5, 15, 15, 16, 14, 10, 10, 6, 5, 4];
+        var VANILLA_MAP_VALUE_WEIGHTS = [15, 15, 15, 10, 10, 10, 10, 5, 5, 5];
+        var VANILLA_MOOGLE_VALUE_WEIGHTS = [
+            [2, 15, 20, 20, 15, 15, 5, 3, 3, 2],
+            [4, 5, 5, 10, 20, 20, 20, 7, 5, 4],
+            [10, 5, 5, 5, 5, 10, 20, 20, 10, 10],
+            [20, 5, 5, 5, 5, 5, 5, 15, 15, 20]
+        ];
+        var VANILLA_STARTING_DECK = [
+            { card: 1, value: 7 }, { card: 1, value: 6 }, { card: 1, value: 5 }, { card: 1, value: 4 }, { card: 1, value: 3 },
+            { card: 1, value: 4 }, { card: 1, value: 3 }, { card: 1, value: 2 }, { card: 1, value: 2 }, { card: 1, value: 1 },
+            { card: 1, value: 0 }, { card: 29, value: 6 }, { card: 42, value: 5 }
+        ];
+        var MOOGLE_TIER_COUNT = 4;
+        var MOOGLE_LARGEST_WEIGHT = 20;
+        var MOOGLE_CATEGORIES = [
+            { category: 1, name: "Attack", cards: ATTACK_CARDS },
+            { category: 2, name: "Magic", cards: MAGIC_CARDS.concat(SUMMON_CARDS) },
+            { category: 3, name: "Item", cards: ITEM_CARDS }
+        ];
+        var SORA_BOSS_FIGHTS = [
+            { name: "Axel I", size: "human", kind: 118, variant: 0, records: [21], arenas: [{ world: 0, arena: 1050 }] },
+            { name: "Larxene I", size: "human", kind: 117, variant: 0, records: [19], arenas: [{ world: 0, arena: 1051 }] },
+            { name: "Riku I", size: "human", kind: 116, variant: 0, records: [16], arenas: [{ world: 0, arena: 1052 }] },
+            { name: "Riku II", size: "human", kind: 116, variant: 1, records: [], arenas: [{ world: 0, arena: 1053 }] },
+            { name: "Vexen I", size: "human", kind: 114, variant: 0, records: [], arenas: [{ world: 0, arena: 1054 }] },
+            { name: "Riku III", size: "human", kind: 116, variant: 2, records: [17], arenas: [{ world: 0, arena: 1055 }] },
+            { name: "Riku IV", size: "human", kind: 116, variant: 3, records: [18], arenas: [{ world: 0, arena: 1056 }] },
+            { name: "Larxene II", size: "human", kind: 117, variant: 1, records: [20], arenas: [{ world: 0, arena: 1057 }] },
+            { name: "Axel II", size: "human", kind: 118, variant: 1, records: [22], arenas: [{ world: 0, arena: 1058 }, { world: 13, arena: 1050 }] },
+            { name: "Cloud", size: "human", kind: 106, variant: 0, records: [5], arenas: [{ world: 3, arena: 1050 }] },
+            { name: "Hades", size: "human", kind: 107, variant: 0, records: [6], arenas: [{ world: 3, arena: 1051 }] },
+            { name: "Vexen II", size: "human", kind: 114, variant: 1, records: [13], arenas: [{ world: 11, arena: 1050 }] },
+            { name: "Guard Armor", size: "big", kind: 102, variant: 0, records: [1], arenas: [{ world: 1, arena: 1050 }] },
+            { name: "Card Soldiers", size: "big", kind: 103, variant: 0, records: [2, 3], arenas: [{ world: 4, arena: 1051 }] },
+            { name: "Trickmaster", size: "big", kind: 105, variant: 0, records: [4], arenas: [{ world: 4, arena: 1050 }], spot: { x: 0, y: 0.01, z: -2 } },
+            { name: "Jafar", size: "big", kind: 108, variant: 0, records: [7], arenas: [{ world: 2, arena: 1050 }], spot: { x: 0, y: 0.01, z: 0 } },
+            { name: "Oogie Boogie", size: "big", kind: 109, variant: 0, records: [8], arenas: [{ world: 6, arena: 1050 }], spot: { x: 0, y: 0.01, z: 0 } },
+            { name: "Parasite Cage", size: "big", kind: 110, variant: 0, records: [9], arenas: [{ world: 5, arena: 1050 }] },
+            { name: "Ursula", size: "big", kind: 111, variant: 0, records: [10], arenas: [{ world: 7, arena: 1050 }], spot: { x: 0, y: 0.01, z: -3 } },
+            { name: "Hook", size: "big", kind: 112, variant: 0, records: [11], arenas: [{ world: 8, arena: 1050 }] },
+            { name: "Dragon Maleficent", size: "big", kind: 113, variant: 0, records: [12], arenas: [{ world: 9, arena: 1050 }] },
+            { name: "Darkside", size: "big", kind: 115, variant: 0, records: [15], arenas: [{ world: 12, arena: 1050 }], spot: { x: 0, y: 0.01, z: -3 } },
+            { name: "Marluxia I", size: "big", kind: 119, variant: 0, records: [23], arenas: [{ world: 13, arena: 1051 }] },
+            { name: "Marluxia II", size: "big", kind: 120, variant: 0, records: [], arenas: [{ world: 13, arena: 1052 }] },
+            { name: "Marluxia III", size: "big", kind: 132, variant: 0, records: [], arenas: [{ world: 13, arena: 1053 }], spot: { x: 0, y: 0.01, z: -3 } }
+        ];
+        var RIKU_BOSS_FIGHTS = [
+            { name: "Lexaeus", kind: 121, variant: 0, records: [24] },
+            { name: "Zexion", kind: 124, variant: 0, records: [25] },
+            { name: "Ansem", kind: 122, variant: 1, records: [] }
+        ];
+        var BOSS_EVENT_CARDS = [
+            { world: 2, room: 2007, name: "Agrabah, after Jafar", card: 36, value: 7 },
+            { world: 3, room: 2005, name: "Olympus Coliseum, after Hades", card: 41, value: 4 },
+            { world: 8, room: 2004, name: "Neverland, after Hook", card: 39, value: 4 },
+            { world: 0, room: 2025, name: "12F Exit Hall, after Larxene II", card: 14, value: 6 }
+        ];
+        var STORY_EVENT_CARDS = [
+            { world: 1, room: 2003, name: "Traverse Town story", card: 35, value: 6 },
+            { world: 2, room: 2003, name: "Agrabah Room of Guidance fight", card: 45, value: 3 },
+            { world: 5, room: 1051, name: "Monstro Room of Truth fight", card: 38, value: 4 },
+            { world: 12, room: 2002, name: "Destiny Islands Room of Guidance", card: 13, value: 4 },
+            { world: 10, room: 2, name: "100 Acre Wood", card: 26, value: 8 },
+            { world: 10, room: 3, name: "100 Acre Wood", card: 31, value: 0 },
+            { world: 10, room: 4, name: "100 Acre Wood", card: 45, value: 9 },
+            { world: 10, room: 5, name: "100 Acre Wood", card: 30, value: 9 },
+            { world: 10, room: 5, name: "100 Acre Wood", card: 43, value: 7 },
+            { world: 10, room: 2301, name: "100 Acre Wood Whirlwind Plunge", card: 46, value: 5 },
+            { world: 10, room: 2401, name: "100 Acre Wood Bumble Rumble", card: 47, value: 1 },
+            { world: 10, room: 2700, name: "100 Acre Wood clear", card: 37, value: 5 }
+        ];
+        var FRIEND_EVENTS = [
+            { world: 0, room: 2001, name: "Donald and Goofy (entrance hall before 1F)" },
+            { world: 1, room: 2003, name: "Pluto (Traverse Town Room of Beginnings)" },
+            { world: 2, room: 2000, name: "Aladdin (Agrabah)" },
+            { world: 6, room: 2000, name: "Jack (Halloween Town)" },
+            { world: 7, room: 2002, name: "Ariel (Atlantica)" },
+            { world: 8, room: 2001, name: "Peter Pan (Neverland)" },
+            { world: 9, room: 2002, name: "Beast (Hollow Bastion)" }
+        ];
+        var STAT_BOSS_KINDS = [102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 124, 132];
+        var LAST_HEARTLESS_KIND = 36;
+
+        var ATTACK_POWERS = [
+            { id: 1, name: "Kingdom Key", powers: [100, 100, 150, 0] },
+            { id: 2, name: "Three Wishes", powers: [200, 100, 300, 0] },
+            { id: 3, name: "Crabclaw", powers: [150, 150, 350, 0] },
+            { id: 4, name: "Pumpkinhead", powers: [200, 200, 150, 0] },
+            { id: 5, name: "Fairy Harp", powers: [200, 200, 200, 0] },
+            { id: 6, name: "Wishing Star", powers: [150, 150, 150, 0] },
+            { id: 7, name: "Spellbinder", powers: [100, 350, 150, 0] },
+            { id: 8, name: "Metal Chocobo", powers: [200, 200, 350, 0] },
+            { id: 9, name: "Olympia", powers: [200, 100, 300, 0] },
+            { id: 10, name: "Lionheart", powers: [250, 250, 300, 0] },
+            { id: 11, name: "Lady Luck", powers: [200, 200, 100, 0] },
+            { id: 12, name: "Divine Rose", powers: [350, 100, 200, 0] },
+            { id: 13, name: "Oathkeeper", powers: [250, 400, 350, 0] },
+            { id: 14, name: "Oblivion", powers: [350, 350, 100, 0] },
+            { id: 15, name: "Ultima Weapon", powers: [400, 400, 400, 0] },
+            { id: 16, name: "Diamond Dust", powers: [300, 300, 300, 0] },
+            { id: 17, name: "One Winged Angel", powers: [150, 150, 600, 0] },
+            { id: 19, name: "Star Seeker", powers: [150, 100, 350, 0] },
+            { id: 20, name: "Total Eclipse", powers: [100, 250, 350, 0] },
+            { id: 21, name: "Midnight Roar", powers: [200, 350, 100, 0] },
+            { id: 22, name: "Maverick Flare", powers: [100, 200, 350, 0] },
+            { id: 23, name: "Two Become One", powers: [250, 300, 350, 0] },
+            { id: 24, name: "Bond of Flame", powers: [400, 200, 300, 0] }
+        ];
+        var MAGIC_POWERS = [
+            { id: 26, name: "Fire", powers: [500, 0, 0, 0] },
+            { id: 27, name: "Blizzard", powers: [400, 0, 0, 0] },
+            { id: 28, name: "Thunder", powers: [350, 0, 0, 0] },
+            { id: 29, name: "Cure", powers: [500, 0, 0, 0] },
+            { id: 30, name: "Gravity", powers: [20, 0, 0, 0] },
+            { id: 31, name: "Stop", powers: [9000, 0, 0, 0] },
+            { id: 32, name: "Aero", powers: [300, 0, 0, 0] },
+            { id: 35, name: "Simba", powers: [300, 0, 0, 0] },
+            { id: 36, name: "Genie", powers: [600, 40, 24000, 1] },
+            { id: 37, name: "Bambi", powers: [10, 0, 0, 0] },
+            { id: 38, name: "Dumbo", powers: [150, 0, 0, 15000] },
+            { id: 39, name: "Tinker Bell", powers: [7, 5, 30, 9000] },
+            { id: 40, name: "Mushu", powers: [100, 0, 0, 10] },
+            { id: 41, name: "Cloud", powers: [500, 500, 0, 0] },
+            { id: 49, name: "Donald", powers: [500, 400, 350, 500] },
+            { id: 50, name: "Goofy", powers: [150, 0, 0, 9000] },
+            { id: 51, name: "Aladdin", powers: [200, 0, 0, 0] },
+            { id: 52, name: "Ariel", powers: [450, 500, 0, 0] },
+            { id: 53, name: "Jack", powers: [600, 500, 400, 10] },
+            { id: 54, name: "Peter Pan", powers: [200, 0, 0, 0] },
+            { id: 55, name: "Beast", powers: [300, 200, 500, 100] },
+            { id: 56, name: "Friend card 56", powers: [100, 0, 0, 20] }
+        ];
+        var SLEIGHT_POWERS = [
+            { id: 4, name: "Sliding Dash", powers: [300, 0, 0, 0] },
+            { id: 5, name: "Blitz", powers: [350, 0, 600, 0] },
+            { id: 6, name: "Stun Impact", powers: [100, 0, 0, 0] },
+            { id: 7, name: "Zantetsuken", powers: [100, 0, 0, 0] },
+            { id: 8, name: "Strike Raid", powers: [200, 0, 0, 0] },
+            { id: 9, name: "Sonic Blade", powers: [200, 0, 400, 0] },
+            { id: 10, name: "Ars Arcanum", powers: [250, 300, 500, 0] },
+            { id: 11, name: "Ragnarok", powers: [400, 0, 0, 0] },
+            { id: 12, name: "Trinity Limit", powers: [2500, 0, 0, 0] },
+            { id: 13, name: "Fira", powers: [1000, 0, 0, 0] },
+            { id: 14, name: "Blizzara", powers: [700, 0, 0, 0] },
+            { id: 15, name: "Thundara", powers: [600, 0, 0, 0] },
+            { id: 16, name: "Cura", powers: [1500, 0, 0, 0] },
+            { id: 17, name: "Gravira", powers: [40, 0, 0, 0] },
+            { id: 18, name: "Stopra", powers: [15000, 0, 0, 0] },
+            { id: 19, name: "Aerora", powers: [600, 0, 0, 0] },
+            { id: 20, name: "Firaga", powers: [1500, 0, 0, 0] },
+            { id: 21, name: "Blizzaga", powers: [1100, 0, 0, 0] },
+            { id: 22, name: "Thundaga", powers: [900, 0, 0, 0] },
+            { id: 23, name: "Curaga", powers: [3000, 0, 0, 0] },
+            { id: 24, name: "Graviga", powers: [70, 0, 0, 0] },
+            { id: 25, name: "Stopga", powers: [21000, 0, 0, 0] },
+            { id: 26, name: "Aeroga", powers: [900, 0, 0, 0] },
+            { id: 27, name: "Fire Raid", powers: [500, 0, 0, 0] },
+            { id: 28, name: "Blizzard Raid", powers: [500, 0, 0, 0] },
+            { id: 29, name: "Thunder Raid", powers: [1000, 0, 0, 0] },
+            { id: 30, name: "Reflect Raid", powers: [700, 0, 0, 0] },
+            { id: 31, name: "Judgment", powers: [250, 0, 0, 0] },
+            { id: 32, name: "Firaga Burst", powers: [650, 0, 0, 0] },
+            { id: 33, name: "Raging Storm", powers: [800, 0, 0, 0] },
+            { id: 34, name: "Mega Flare", powers: [2000, 0, 0, 0] },
+            { id: 35, name: "Freeze", powers: [450, 1000, 0, 0] },
+            { id: 36, name: "Homing Blizzara", powers: [800, 0, 0, 0] },
+            { id: 37, name: "Aqua Splash", powers: [500, 0, 0, 0] },
+            { id: 38, name: "Magnet Spiral", powers: [850, 0, 0, 0] },
+            { id: 39, name: "Lethal Frame", powers: [9000, 350, 500, 0] },
+            { id: 40, name: "Shock Impact", powers: [12000, 0, 0, 0] },
+            { id: 41, name: "Tornado", powers: [1200, 0, 0, 0] },
+            { id: 42, name: "Quake", powers: [850, 0, 0, 0] },
+            { id: 45, name: "Bind", powers: [10, 0, 0, 0] },
+            { id: 46, name: "Confuse", powers: [10, 0, 0, 0] },
+            { id: 47, name: "Terror", powers: [10, 0, 0, 0] },
+            { id: 49, name: "Gifted Miracle", powers: [500, 0, 0, 0] },
+            { id: 50, name: "Teleport", powers: [18000, 0, 0, 0] },
+            { id: 51, name: "Holy", powers: [800, 800, 800, 800] },
+            { id: 52, name: "Proud Roar LV2", powers: [300, 0, 0, 0] },
+            { id: 53, name: "Proud Roar LV3", powers: [500, 0, 0, 0] },
+            { id: 54, name: "Splash LV2", powers: [150, 0, 0, 30000] },
+            { id: 55, name: "Splash LV3", powers: [200, 0, 0, 30000] },
+            { id: 56, name: "Paradise LV2", powers: [10, 0, 0, 0] },
+            { id: 57, name: "Paradise LV3", powers: [10, 0, 0, 0] },
+            { id: 58, name: "Idyll Romp", powers: [10, 0, 0, 0] },
+            { id: 59, name: "Flare Breath LV2", powers: [100, 0, 0, 23] },
+            { id: 60, name: "Flare Breath LV3", powers: [100, 0, 0, 35] },
+            { id: 61, name: "Showtime LV2", powers: [600, 40, 24000, 2] },
+            { id: 62, name: "Showtime LV3", powers: [600, 40, 24000, 3] },
+            { id: 63, name: "Twinkle LV2", powers: [13, 10, 60, 12000] },
+            { id: 64, name: "Twinkle LV3", powers: [22, 15, 100, 15000] },
+            { id: 65, name: "Cross-slash", powers: [500, 500, 500, 0] },
+            { id: 66, name: "Omnislash", powers: [600, 600, 800, 0] },
+            { id: 67, name: "Cross-slash+", powers: [500, 500, 500, 0] },
+            { id: 68, name: "Magic LV2", powers: [1000, 700, 600, 1500] },
+            { id: 69, name: "Magic LV3", powers: [1500, 1100, 900, 3000] },
+            { id: 70, name: "Stardust Blitz", powers: [1000, 1000, 1000, 100] },
+            { id: 71, name: "Goofy Tornado LV2", powers: [200, 0, 0, 16000] },
+            { id: 72, name: "Goofy Tornado LV3", powers: [250, 0, 0, 21000] },
+            { id: 73, name: "Goofy Smash", powers: [100, 500, 0, 100] },
+            { id: 74, name: "Wild Crush", powers: [400, 0, 0, 0] },
+            { id: 75, name: "Sandstorm LV2", powers: [200, 0, 0, 0] },
+            { id: 76, name: "Sandstorm LV3", powers: [200, 0, 0, 0] },
+            { id: 77, name: "Surprise! LV2", powers: [1200, 1000, 800, 30] },
+            { id: 78, name: "Surprise! LV3", powers: [1800, 1500, 1200, 90] },
+            { id: 79, name: "Spiral Wave LV2", powers: [450, 900, 0, 0] },
+            { id: 80, name: "Spiral Wave LV3", powers: [450, 900, 0, 0] },
+            { id: 81, name: "Hummingbird LV2", powers: [250, 0, 0, 0] },
+            { id: 82, name: "Hummingbird LV3", powers: [300, 0, 0, 0] },
+            { id: 83, name: "Furious Volley LV2", powers: [350, 250, 1000, 250] },
+            { id: 84, name: "Furious Volley LV3", powers: [400, 300, 1500, 250] }
+        ];
+        var POWER_GROUPS = [
+            { key: "card", lever: "card_powers", idName: "card", title: "Card power (attack cards: strike, thrust, finisher)",
+              columns: ["Power 1", "Power 2", "Power 3", "Power 4"], rows: ATTACK_POWERS.concat(MAGIC_POWERS) },
+            { key: "sleight", lever: "sleight_powers", idName: "sleight", title: "Sleight power",
+              columns: ["Power 1", "Power 2", "Power 3", "Power 4"], rows: SLEIGHT_POWERS }
+        ];
+        var OLD_CARD_POWER_KEYS = ["attack", "magic"];
+        var GRAVITY_CARDS = [30];
+        var GRAVITY_SLEIGHTS = [17, 24];
+        var LARGEST_GRAVITY_POWER = 99;
+        var LARGEST_POWER = 65535;
+        var LARGEST_POWER_PERCENT = 1000;
+        var POWERS_STORAGE_KEY = "khrecom-seed-generator-powers";
+
+        function getValue(id) {
+            return getElement(id).value;
+        }
+
+        function readSettings() {
+            return {
+                seed: getValue("seed").trim(),
+                startingDeck: getValue("starting-deck-mode") === "yes",
+                startingHeal: getValue("starting-heal"),
+                floorMode: getValue("floor-mode"),
+                floorLayoutMode: getValue("floor-layout-mode"),
+                heartless: getValue("heartless-mode") === "yes",
+                bossMode: getValue("boss-mode"),
+                bossScope: getValue("boss-scope"),
+                enemyDropMode: getValue("enemy-drop-mode"),
+                enemyDecks: getValue("enemy-deck-mode") === "yes",
+                deckLowest: readNumber("deck-lowest"),
+                deckHighest: readNumber("deck-highest"),
+                statHp: readNumber("stat-hp"),
+                statAttack: readNumber("stat-attack"),
+                statExp: readNumber("stat-exp"),
+                bounties: getValue("bounty-mode") === "yes",
+                rewardRooms: getValue("rewards-room-mode") === "yes",
+                bossRewards: getValue("boss-reward-mode") === "yes",
+                levelSleights: getValue("level-sleight-mode") === "yes",
+                storyRewards: getValue("story-reward-mode") === "yes",
+                friendSleights: getValue("friend-sleight-mode") === "yes",
+                dropMode: getValue("drop-mode"),
+                moogleMode: getValue("moogle-mode"),
+                cardCp: getValue("card-cp-mode") === "yes",
+                cardCpSpread: readNumber("card-cp-spread"),
+                doorsKeyOnly: getValue("door-mode") === "yes",
+                mapCardMode: getValue("map-card-mode"),
+                cardValueMode: getValue("card-value-mode"),
+                cardValueWeights: readCardValueWeights(),
+                cardValueMaps: getValue("card-value-maps") === "yes",
+                powers: readPowerSettings(),
+                mapValueMode: getValue("map-value-mode"),
+                objectChance: readNumber("object-chance"),
+                objectCap: readNumber("object-cap"),
+                enemyHp: readNumber("enemy-hp"),
+                enemyAttack: readNumber("enemy-attack"),
+                enemyExp: readNumber("enemy-exp")
+            };
+        }
+
+        function readCardValueWeights() {
+            var weights = [];
+            for (var value = 0; value < CARD_VALUE_COUNT; value++) {
+                if (getValue("card-value-mode") === "own") {
+                    weights.push(readNumber("value-weight-" + value));
+                } else if (getElement("value-allowed-" + value).checked || getValue("card-value-mode") === "any") {
+                    weights.push(10);
+                } else {
+                    weights.push(0);
+                }
+            }
+            return weights;
+        }
+
+        function areValuesLimited(settings) {
+            return settings.cardValueMode !== "any";
+        }
+
+        function isValueAllowed(settings, value) {
+            return settings.cardValueWeights[value] > 0;
+        }
+
+        function getAllowedValues(settings) {
+            return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].filter(function (value) {
+                return isValueAllowed(settings, value);
+            });
+        }
+
+        function scaleValueWeights(weights) {
+            var entries = weights.map(function (weight, value) { return { card: value, weight: weight }; });
+            var scaledWeights = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            scaleToHundred(entries).forEach(function (entry) {
+                scaledWeights[entry.card] = entry.weight;
+            });
+            return scaledWeights;
+        }
+
+        function limitValueWeights(settings, sourceWeights) {
+            if (settings.cardValueMode === "any") {
+                return sourceWeights;
+            }
+            if (settings.cardValueMode === "own") {
+                return scaleValueWeights(settings.cardValueWeights);
+            }
+            var keptWeights = sourceWeights.map(function (weight, value) {
+                if (isValueAllowed(settings, value)) {
+                    return Math.max(1, weight);
+                }
+                return 0;
+            });
+            return scaleValueWeights(keptWeights);
+        }
+
+        function pickCardValue(nextRandom, settings) {
+            var weights = limitValueWeights(settings, EVEN_VALUE_WEIGHTS);
+            var remaining = randomWholeNumber(nextRandom, 1, ODDS_TOTAL);
+            for (var value = 0; value < CARD_VALUE_COUNT; value++) {
+                remaining = remaining - weights[value];
+                if (remaining <= 0) {
+                    return value;
+                }
+            }
+        }
+
+        function findCardValueProblem(settings) {
+            var total = 0;
+            for (var value = 0; value < CARD_VALUE_COUNT; value++) {
+                if (!isWholeNumberBetween(settings.cardValueWeights[value], 0, 100)) {
+                    return "The card value weights must be whole numbers from 0 to 100.";
+                }
+                total = total + settings.cardValueWeights[value];
+            }
+            if (total === 0) {
+                return "At least one card value must be allowed.";
+            }
+            return null;
+        }
+
+        function findSettingsProblem(settings) {
+            if (settings.seed === "") {
+                return "Enter a seed or press New seed.";
+            }
+            if (!isWholeNumberBetween(settings.deckLowest, 0, 9) || !isWholeNumberBetween(settings.deckHighest, 0, 9)) {
+                return "The enemy deck values must be whole numbers from 0 to 9.";
+            }
+            if (settings.deckLowest > settings.deckHighest) {
+                return "The lowest enemy deck value can not be above the highest.";
+            }
+            if (!isWholeNumberBetween(settings.statHp, 0, 90) || !isWholeNumberBetween(settings.statAttack, 0, 90)) {
+                return "The largest enemy stat changes must be whole numbers from 0 to 90.";
+            }
+            if (!isWholeNumberBetween(settings.statExp, 0, 90)) {
+                return "The largest enemy stat changes must be whole numbers from 0 to 90.";
+            }
+            if (!isWholeNumberBetween(settings.cardCpSpread, 0, 90)) {
+                return "The largest CP change must be a whole number from 0 to 90.";
+            }
+            if (settings.mapCardMode === "joker" && !settings.doorsKeyOnly) {
+                return "Always drop Random Joker needs story doors that only need their key.";
+            }
+            if (settings.objectChance !== null && !isWholeNumberBetween(settings.objectChance, 0, 100)) {
+                return "The object card chance must be a whole number from 0 to 100, or empty.";
+            }
+            if (settings.objectCap !== null && !isWholeNumberBetween(settings.objectCap, 0, 99)) {
+                return "Object cards per room must be a whole number from 0 to 99, or empty.";
+            }
+            if (!isNumberBetween(settings.enemyHp, 0, 100) || !isNumberBetween(settings.enemyAttack, 0, 100)) {
+                return "The enemy multipliers must be from 0 to 100.";
+            }
+            if (!isNumberBetween(settings.enemyExp, 0, 100)) {
+                return "The enemy multipliers must be from 0 to 100.";
+            }
+            var cardValueProblem = findCardValueProblem(settings);
+            if (cardValueProblem !== null) {
+                return cardValueProblem;
+            }
+            var powerProblem = findPowerProblem(settings);
+            if (powerProblem !== null) {
+                return powerProblem;
+            }
+            return findOddsProblem(settings);
+        }
+
+        function getOrCreateList(levers, name) {
+            if (levers[name] === undefined) {
+                levers[name] = [];
+            }
+            return levers[name];
+        }
+
+        function buildStoryDoors(settings, levers, spoiler) {
+            if (!settings.doorsKeyOnly) {
+                return;
+            }
+            levers.story_doors_key_only = true;
+            spoiler.push("Story doors only need their key");
+            spoiler.push("");
+        }
+
+        function makeWorldOrder(settings) {
+            var nextRandom = makeRandom(settings.seed, "world order");
+            if (settings.floorMode === "groups") {
+                var lowFloors = shuffleList(nextRandom, [2, 3, 4, 5, 6]);
+                var highFloors = shuffleList(nextRandom, [7, 8, 9, 10]);
+                return [1].concat(lowFloors, highFloors, [11, 12, LAST_WORLD]);
+            }
+            var worlds = [];
+            for (var worldId = 1; worldId <= LAST_SHUFFLED_WORLD; worldId++) {
+                worlds.push(worldId);
+            }
+            return shuffleList(nextRandom, worlds).concat([LAST_WORLD]);
+        }
+
+        function buildWorldOrder(settings, levers, spoiler) {
+            if (settings.floorMode === "no") {
+                return;
+            }
+            levers.world_order = makeWorldOrder(settings);
+            if (settings.floorMode === "all") {
+                levers.floor_layout_order = makeLayoutOrder(settings, levers.world_order);
+            }
+            spoiler.push("World order");
+            levers.world_order.forEach(function (worldId, index) {
+                spoiler.push("  Floor " + (index + 1) + ": " + WORLD_NAMES[worldId]);
+            });
+            spoiler.push("");
+        }
+
+        function isBossPlaceShuffled(settings, place) {
+            if (settings.bossMode === "no") {
+                return false;
+            }
+            return settings.bossScope === "all" || place.size === "human";
+        }
+
+        function makeBossSetup(settings) {
+            var shuffledPlaces = SORA_BOSS_FIGHTS.filter(function (place) { return isBossPlaceShuffled(settings, place); });
+            var choices = shuffledPlaces;
+            if (settings.bossMode === "riku") {
+                choices = shuffledPlaces.concat(RIKU_BOSS_FIGHTS);
+            }
+            var newFights = shuffleList(makeRandom(settings.seed, "bosses"), choices);
+            var nextFight = 0;
+            return SORA_BOSS_FIGHTS.map(function (place) {
+                if (!isBossPlaceShuffled(settings, place)) {
+                    return { place: place, fight: place, isShuffled: false };
+                }
+                var fight = newFights[nextFight];
+                nextFight = nextFight + 1;
+                return { place: place, fight: fight, isShuffled: true };
+            });
+        }
+
+        function getBossFightLever(entry, arena) {
+            var lever = { world: arena.world, arena: arena.arena, kind: entry.fight.kind, variant: entry.fight.variant };
+            if (entry.place.spot !== undefined) {
+                lever.position = entry.place.spot;
+            }
+            return lever;
+        }
+
+        function buildBossFights(settings, levers, spoiler, bossSetup) {
+            if (settings.bossMode === "no") {
+                return;
+            }
+            levers.boss_fights = [];
+            spoiler.push("Bosses");
+            bossSetup.forEach(function (entry) {
+                if (!entry.isShuffled) {
+                    return;
+                }
+                if (entry.fight !== entry.place) {
+                    entry.place.arenas.forEach(function (arena) {
+                        levers.boss_fights.push(getBossFightLever(entry, arena));
+                    });
+                }
+                spoiler.push("  " + entry.place.name + " fight: " + entry.fight.name);
+            });
+            spoiler.push("");
+        }
+
+        function getChangePercent(nextRandom, largestChange) {
+            return (100 + randomWholeNumber(nextRandom, -largestChange, largestChange)) / 100;
+        }
+
+        function buildEnemyStats(settings, levers, spoiler) {
+            if (settings.enemyHp !== 1) {
+                levers.enemy_hp_multiplier = settings.enemyHp;
+            }
+            if (settings.enemyAttack !== 1) {
+                levers.enemy_attack_multiplier = settings.enemyAttack;
+            }
+            if (settings.enemyExp !== 1) {
+                levers.enemy_exp_multiplier = settings.enemyExp;
+            }
+            if (settings.statHp === 0 && settings.statAttack === 0 && settings.statExp === 0) {
+                return;
+            }
+            var kinds = [];
+            for (var kind = 1; kind <= LAST_HEARTLESS_KIND; kind++) {
+                kinds.push(kind);
+            }
+            var nextRandom = makeRandom(settings.seed, "enemy stats");
+            levers.enemy_kind_stats = [];
+            spoiler.push("Enemy stats (multipliers for HP, attack and EXP)");
+            kinds.concat(STAT_BOSS_KINDS).forEach(function (enemyKind) {
+                var entry = {
+                    kind: enemyKind,
+                    hp: getChangePercent(nextRandom, settings.statHp),
+                    attack: getChangePercent(nextRandom, settings.statAttack),
+                    exp: getChangePercent(nextRandom, settings.statExp)
+                };
+                levers.enemy_kind_stats.push(entry);
+                spoiler.push("  " + getEnemyKindName(enemyKind) + ": " + entry.hp + ", " + entry.attack + ", " + entry.exp);
+            });
+            spoiler.push("");
+        }
+
+        function buildEnemyDecks(settings, levers, spoiler) {
+            if (!settings.enemyDecks) {
+                return;
+            }
+            var nextRandom = makeRandom(settings.seed, "enemy decks");
+            levers.enemy_decks = [];
+            spoiler.push("Enemy decks");
+            HEARTLESS_DECKS.concat(BOSS_DECKS).forEach(function (enemy) {
+                var counts = makeRandomDeck(nextRandom, enemy.cards, settings.deckLowest, settings.deckHighest);
+                levers.enemy_decks.push({ kind: enemy.kind, counts: counts });
+                spoiler.push("  " + enemy.name + ": " + describeDeck(counts));
+            });
+            spoiler.push("");
+        }
+
+        function buildCardCp(settings, levers, spoiler) {
+            if (!settings.cardCp || settings.cardCpSpread === 0) {
+                return;
+            }
+            var nextRandom = makeRandom(settings.seed, "card cp");
+            levers.card_cp = [];
+            spoiler.push("Card CP");
+            getBattleCards().forEach(function (card) {
+                var cp = Math.round(card.cp * getChangePercent(nextRandom, settings.cardCpSpread));
+                cp = Math.max(1, Math.min(255, cp));
+                levers.card_cp.push({ card: card.id, cp: cp });
+                spoiler.push("  " + card.name + ": " + card.cp + " -> " + cp);
+            });
+            spoiler.push("");
+        }
+
+        function getBaseCp(levers, card) {
+            if (levers.card_cp !== undefined) {
+                for (var index = 0; index < levers.card_cp.length; index++) {
+                    if (levers.card_cp[index].card === card.id) {
+                        return levers.card_cp[index].cp;
+                    }
+                }
+            }
+            return card.cp;
+        }
+
+        function getCardCost(levers, card, value) {
+            var base = getBaseCp(levers, card);
+            if (ENEMY_CARD_NAMES[card.id] !== undefined) {
+                return base;
+            }
+            var countedValue = value;
+            if (value === 0) {
+                countedValue = 10;
+            }
+            return base + Math.floor(base / 10) * (countedValue - 1);
+        }
+
+        function getDeckCost(levers, deck) {
+            var cost = 0;
+            deck.forEach(function (entry) {
+                cost = cost + getCardCost(levers, entry.card, entry.value);
+            });
+            return cost;
+        }
+
+        function findCard(cardId) {
+            var knownCards = getBattleCards().concat(HEALING_ENEMY_CARDS);
+            return knownCards.filter(function (card) { return card.id === cardId; })[0];
+        }
+
+        function makeDeckEntry(nextRandom, settings, card, isRequired) {
+            var value = pickCardValue(nextRandom, settings);
+            if (ENEMY_CARD_NAMES[card.id] !== undefined) {
+                value = 0;
+            }
+            return { card: card, value: value, isRequired: isRequired };
+        }
+
+        function pickDeckCard(nextRandom, settings) {
+            var attackCards = keepSoraCards(ATTACK_CARDS);
+            if (randomWholeNumber(nextRandom, 1, 100) <= ATTACK_CARD_PERCENT) {
+                return pickOne(nextRandom, attackCards);
+            }
+            var otherCards = MAGIC_CARDS.concat(SUMMON_CARDS, ITEM_CARDS).filter(function (card) {
+                if (settings.startingHeal === "no") {
+                    return HEALING_CARDS.indexOf(card.id) === -1;
+                }
+                return true;
+            });
+            return pickOne(nextRandom, otherCards);
+        }
+
+        function getRequiredDeckCards(nextRandom, settings) {
+            var cards = [];
+            if (settings.startingHeal === "cure") {
+                cards.push(findCard(CURE_CARD));
+            }
+            if (settings.startingHeal === "healing") {
+                cards.push(findCard(pickOne(nextRandom, HEALING_CARDS)));
+            }
+            return cards;
+        }
+
+        function hasCheaperValue(settings, levers, entry) {
+            var cheapestValue = getCheapValues(settings)[0];
+            return getCardCost(levers, entry.card, cheapestValue) < getCardCost(levers, entry.card, entry.value);
+        }
+
+        function canBeCheaper(settings, levers, entry) {
+            return !entry.isRequired || hasCheaperValue(settings, levers, entry);
+        }
+
+        function findMostExpensiveEntry(settings, levers, deck) {
+            var choices = deck.filter(function (entry) { return canBeCheaper(settings, levers, entry); });
+            var mostExpensive = choices[0];
+            choices.forEach(function (entry) {
+                if (getCardCost(levers, entry.card, entry.value) > getCardCost(levers, mostExpensive.card, mostExpensive.value)) {
+                    mostExpensive = entry;
+                }
+            });
+            return mostExpensive;
+        }
+
+        function getCheapValues(settings) {
+            var cheapValues = getAllowedValues(settings);
+            if (cheapValues[0] === 0) {
+                cheapValues.shift();
+                cheapValues.push(0);
+            }
+            return cheapValues.slice(0, CHEAP_VALUE_COUNT);
+        }
+
+        function makeEntryCheaper(nextRandom, settings, entry) {
+            if (entry.isRequired) {
+                entry.value = getCheapValues(settings)[0];
+                return;
+            }
+            entry.card = pickOne(nextRandom, keepSoraCards(ATTACK_CARDS));
+            entry.value = pickOne(nextRandom, getCheapValues(settings));
+        }
+
+        function tryStartingDeck(nextRandom, settings, levers) {
+            var deck = getRequiredDeckCards(nextRandom, settings).map(function (card) {
+                return makeDeckEntry(nextRandom, settings, card, true);
+            });
+            deck.push(makeDeckEntry(nextRandom, settings, pickOne(nextRandom, keepSoraCards(ATTACK_CARDS)), false));
+            while (deck.length < STARTING_DECK_SIZE) {
+                deck.push(makeDeckEntry(nextRandom, settings, pickDeckCard(nextRandom, settings), false));
+            }
+            for (var attempt = 0; attempt < STARTING_DECK_CHANGES; attempt++) {
+                if (getDeckCost(levers, deck) < STARTING_CP) {
+                    return deck;
+                }
+                makeEntryCheaper(nextRandom, settings, findMostExpensiveEntry(settings, levers, deck));
+            }
+            return null;
+        }
+
+        function findCheapestAttackCard(levers) {
+            var cards = keepSoraCards(ATTACK_CARDS);
+            var cheapestCard = cards[0];
+            cards.forEach(function (card) {
+                if (getBaseCp(levers, card) < getBaseCp(levers, cheapestCard)) {
+                    cheapestCard = card;
+                }
+            });
+            return cheapestCard;
+        }
+
+        function makeLimitedVanillaDeck(nextRandom, settings, levers) {
+            var deck = VANILLA_STARTING_DECK.map(function (entry) {
+                var value = entry.value;
+                if (!isValueAllowed(settings, value)) {
+                    value = pickCardValue(nextRandom, settings);
+                }
+                return { card: findCard(entry.card), value: value, isRequired: true };
+            });
+            var cheapestValue = getCheapValues(settings)[0];
+            for (var index = 0; index < deck.length && getDeckCost(levers, deck) >= STARTING_CP; index++) {
+                if (hasCheaperValue(settings, levers, deck[index])) {
+                    deck[index].value = cheapestValue;
+                }
+            }
+            var cheapestCard = findCheapestAttackCard(levers);
+            for (var position = deck.length - 1; position >= 0 && getDeckCost(levers, deck) >= STARTING_CP; position--) {
+                deck[position].card = cheapestCard;
+            }
+            return deck;
+        }
+
+        function addStartingDeck(deck, levers, spoiler) {
+            levers.starting_deck = deck.map(function (entry) { return { card: entry.card.id, value: entry.value }; });
+            spoiler.push("Starting deck (" + getDeckCost(levers, deck) + " of " + STARTING_CP + " CP)");
+            if (getDeckCost(levers, deck) > STARTING_CP) {
+                spoiler.push("  This deck is over Sora's starting CP. The allowed card values and the random card CP cost too much.");
+            }
+            deck.forEach(function (entry) {
+                var valueText = " " + entry.value;
+                if (ENEMY_CARD_NAMES[entry.card.id] !== undefined) {
+                    valueText = "";
+                }
+                spoiler.push("  " + entry.card.name + valueText);
+            });
+            spoiler.push("");
+        }
+
+        function buildVanillaStartingDeck(settings, levers, spoiler) {
+            if (areValuesLimited(settings)) {
+                var nextRandom = makeRandom(settings.seed, "vanilla starting deck");
+                addStartingDeck(makeLimitedVanillaDeck(nextRandom, settings, levers), levers, spoiler);
+            }
+        }
+
+        function buildStartingDeck(settings, levers, spoiler) {
+            if (!settings.startingDeck) {
+                buildVanillaStartingDeck(settings, levers, spoiler);
+                return;
+            }
+            var nextRandom = makeRandom(settings.seed, "starting deck");
+            var deck = null;
+            for (var attempt = 0; attempt < STARTING_DECK_TRIES && deck === null; attempt++) {
+                deck = tryStartingDeck(nextRandom, settings, levers);
+            }
+            if (deck === null) {
+                spoiler.push("Starting deck: vanilla cards, no random deck fits the CP");
+                spoiler.push("");
+                buildVanillaStartingDeck(settings, levers, spoiler);
+                return;
+            }
+            addStartingDeck(deck, levers, spoiler);
+        }
+
+        function isChestRandomized(settings, chest) {
+            if (chest.list === "bounties") {
+                return settings.bounties;
+            }
+            return settings.rewardRooms;
+        }
+
+        function getHeartlessPlaces() {
+            var places = [];
+            for (var cardId = FIRST_HEARTLESS_CARD; cardId <= LAST_HEARTLESS_CARD; cardId++) {
+                if (cardId !== DARKBALL_CARD) {
+                    places.push({ type: "heartless", heartless: cardId, card: cardId, name: ENEMY_CARD_NAMES[cardId] + " (Heartless drop)" });
+                }
+            }
+            return places;
+        }
+
+        function getChestPlaces(settings, kind) {
+            var places = [];
+            CHEST_REWARDS.forEach(function (chest) {
+                if (chest.kind === kind && isChestRandomized(settings, chest)) {
+                    var place = { type: "chest", chest: chest, name: describeChest(chest) };
+                    if (kind === "card") {
+                        place.card = chest.vanilla;
+                    } else {
+                        place.sleight = chest.vanilla;
+                    }
+                    places.push(place);
+                }
+            });
+            return places;
+        }
+
+        function getBossRecord(record) {
+            return BOSS_REWARDS.filter(function (reward) { return reward.record === record; })[0];
+        }
+
+        function describeBossReward(entry) {
+            if (entry.fight === entry.place) {
+                return entry.fight.name + " (boss)";
+            }
+            return entry.fight.name + " (boss, in the " + entry.place.name + " fight)";
+        }
+
+        function getBossRewardPlaces(bossSetup) {
+            var places = [];
+            bossSetup.forEach(function (entry) {
+                var fight = entry.fight;
+                if (fight.records.length > 0) {
+                    var reward = getBossRecord(fight.records[0]);
+                    places.push({ type: "boss", records: fight.records, card: reward.card, value: reward.value, name: describeBossReward(entry) });
+                }
+            });
+            return places;
+        }
+
+        function getEventCardPlaces(events) {
+            return events.map(function (event) {
+                return { type: "event", event: event, card: event.card, value: event.value, name: event.name };
+            });
+        }
+
+        function getCardPlaces(settings, bossSetup) {
+            var places = [];
+            if (settings.enemyDropMode !== "no") {
+                places = places.concat(getHeartlessPlaces());
+            }
+            places = places.concat(getChestPlaces(settings, "card"));
+            if (settings.bossRewards) {
+                places = places.concat(getBossRewardPlaces(bossSetup), getEventCardPlaces(BOSS_EVENT_CARDS));
+            }
+            if (settings.storyRewards) {
+                places = places.concat(getEventCardPlaces(STORY_EVENT_CARDS));
+            }
+            return places;
+        }
+
+        function getRewardValue(nextRandom, settings, item) {
+            if (ENEMY_CARD_NAMES[item.card] !== undefined) {
+                return 0;
+            }
+            if (item.value !== undefined && isValueAllowed(settings, item.value)) {
+                return item.value;
+            }
+            return pickCardValue(nextRandom, settings);
+        }
+
+        function placeCard(settings, levers, nextRandom, place, item) {
+            var value = getRewardValue(nextRandom, settings, item);
+            if (place.type === "heartless") {
+                getOrCreateList(levers, "heartless_rewards").push({ heartless: place.heartless, card: item.card });
+                return "";
+            }
+            if (place.type === "chest") {
+                getOrCreateList(levers, place.chest.list).push({ world: place.chest.world, chest: place.chest.chest, card: item.card });
+                return "";
+            }
+            if (place.type === "boss") {
+                place.records.forEach(function (record) {
+                    getOrCreateList(levers, "boss_rewards").push({ record: record, card: item.card, value: value });
+                });
+                return " " + value;
+            }
+            getOrCreateList(levers, "event_cards").push({
+                world: place.event.world, room: place.event.room, original: place.event.card, card: item.card, value: value
+            });
+            return " " + value;
+        }
+
+        function buildCardPool(settings, levers, spoiler, bossSetup) {
+            if (settings.enemyDropMode === "guaranteed") {
+                levers.heartless_first_drop = true;
+            }
+            var places = getCardPlaces(settings, bossSetup);
+            if (places.length === 0) {
+                return;
+            }
+            var nextRandom = makeRandom(settings.seed, "card pool");
+            var items = shuffleList(nextRandom, places.map(function (place) {
+                return { card: place.card, value: place.value };
+            }));
+            spoiler.push("Card pool");
+            places.forEach(function (place, index) {
+                var valueText = placeCard(settings, levers, nextRandom, place, items[index]);
+                if (ENEMY_CARD_NAMES[items[index].card] !== undefined) {
+                    valueText = "";
+                }
+                spoiler.push("  " + place.name + ": " + getCardName(items[index].card) + valueText);
+            });
+            if (settings.enemyDropMode === "guaranteed") {
+                spoiler.push("  Each Heartless always drops its card until you have it.");
+            }
+            spoiler.push("");
+        }
+
+        function hasBossReward(levers, record) {
+            return levers.boss_rewards !== undefined && levers.boss_rewards.some(function (entry) { return entry.record === record; });
+        }
+
+        function hasEventCard(levers, event) {
+            return levers.event_cards !== undefined && levers.event_cards.some(function (entry) {
+                return entry.world === event.world && entry.room === event.room && entry.original === event.card;
+            });
+        }
+
+        function isFixedValueWrong(settings, reward) {
+            return ENEMY_CARD_NAMES[reward.card] === undefined && !isValueAllowed(settings, reward.value);
+        }
+
+        function addLimitedBossRewards(settings, levers, nextRandom, lines) {
+            BOSS_REWARDS.forEach(function (reward) {
+                if (isFixedValueWrong(settings, reward) && !hasBossReward(levers, reward.record)) {
+                    var value = pickCardValue(nextRandom, settings);
+                    getOrCreateList(levers, "boss_rewards").push({ record: reward.record, card: reward.card, value: value });
+                    lines.push("  " + reward.boss + " (boss): " + getCardName(reward.card) + " " + value);
+                }
+            });
+        }
+
+        function addLimitedEventCards(settings, levers, nextRandom, lines) {
+            BOSS_EVENT_CARDS.concat(STORY_EVENT_CARDS).forEach(function (event) {
+                if (isFixedValueWrong(settings, event) && !hasEventCard(levers, event)) {
+                    var value = pickCardValue(nextRandom, settings);
+                    getOrCreateList(levers, "event_cards").push({
+                        world: event.world, room: event.room, original: event.card, card: event.card, value: value
+                    });
+                    lines.push("  " + event.name + ": " + getCardName(event.card) + " " + value);
+                }
+            });
+        }
+
+        function buildCardValues(settings, levers, spoiler) {
+            if (!areValuesLimited(settings)) {
+                return;
+            }
+            var nextRandom = makeRandom(settings.seed, "card values");
+            var lines = [];
+            levers.heartless_card_value_weights = limitValueWeights(settings, EVEN_VALUE_WEIGHTS);
+            levers.moogle_value_weights = VANILLA_MOOGLE_VALUE_WEIGHTS.map(function (weights, tier) {
+                return { tier: tier, weights: limitValueWeights(settings, weights) };
+            });
+            addLimitedBossRewards(settings, levers, nextRandom, lines);
+            addLimitedEventCards(settings, levers, nextRandom, lines);
+            spoiler.push("Card values that can be found: " + getAllowedValues(settings).join(", "));
+            spoiler.push("  Heartless drops, weights 0 to 9: " + levers.heartless_card_value_weights.join(" "));
+            levers.moogle_value_weights.forEach(function (entry) {
+                spoiler.push("  Moogle pack tier " + entry.tier + ", weights 0 to 9: " + entry.weights.join(" "));
+            });
+            if (lines.length > 0) {
+                spoiler.push("Fixed rewards with a new value");
+                lines.forEach(function (line) {
+                    spoiler.push(line);
+                });
+            }
+            spoiler.push("");
+        }
+
+        function isBossSleightEvent(event) {
+            return event.world === 0 && event.sleights.length === 1;
+        }
+
+        function findFriendEvent(event) {
+            for (var index = 0; index < FRIEND_EVENTS.length; index++) {
+                if (FRIEND_EVENTS[index].world === event.world && FRIEND_EVENTS[index].room === event.room) {
+                    return FRIEND_EVENTS[index];
+                }
+            }
+            return null;
+        }
+
+        function getEventSleightPlaces(settings) {
+            var places = [];
+            EVENT_SLEIGHTS.forEach(function (event) {
+                var isWanted = settings.storyRewards;
+                var placeName = event.name;
+                var friendEvent = findFriendEvent(event);
+                if (isBossSleightEvent(event)) {
+                    isWanted = settings.bossRewards;
+                }
+                if (friendEvent !== null) {
+                    isWanted = settings.friendSleights;
+                    placeName = friendEvent.name;
+                }
+                if (isWanted) {
+                    event.sleights.forEach(function (sleight) {
+                        places.push({ type: "event", event: event, sleight: sleight, name: placeName });
+                    });
+                }
+            });
+            return places;
+        }
+
+        function getSleightPlaces(settings) {
+            var places = getChestPlaces(settings, "sleight");
+            if (settings.levelSleights) {
+                VANILLA_LEVEL_UP_SLEIGHTS.forEach(function (entry) {
+                    places.push({ type: "level", entry: entry, sleight: entry.sleight, name: "Level " + entry.level });
+                });
+            }
+            if (settings.bossRewards) {
+                CARD_SLEIGHTS.forEach(function (card) {
+                    card.sleights.forEach(function (sleight, index) {
+                        places.push({ type: "card", card: card.card, number: index + 1, sleight: sleight, name: "First " + card.name + " card" });
+                    });
+                });
+            }
+            return places.concat(getEventSleightPlaces(settings));
+        }
+
+        function placeSleight(levers, place, sleight) {
+            if (place.type === "chest") {
+                getOrCreateList(levers, place.chest.list).push({ world: place.chest.world, chest: place.chest.chest, sleight: sleight });
+            } else if (place.type === "level") {
+                getOrCreateList(levers, "level_up_sleights").push({ slot: place.entry.slot, level: place.entry.level, sleight: sleight });
+            } else if (place.type === "card") {
+                getOrCreateList(levers, "card_sleights").push({ card: place.card, number: place.number, sleight: sleight });
+            } else {
+                getOrCreateList(levers, "event_sleights").push({
+                    world: place.event.world, room: place.event.room, original: place.sleight, sleight: sleight
+                });
+            }
+        }
+
+        function buildSleightPool(settings, levers, spoiler) {
+            var places = getSleightPlaces(settings);
+            if (places.length === 0) {
+                return;
+            }
+            var nextRandom = makeRandom(settings.seed, "sleight pool");
+            var sleights = shuffleList(nextRandom, places.map(function (place) { return place.sleight; }));
+            spoiler.push("Sleight pool");
+            places.forEach(function (place, index) {
+                placeSleight(levers, place, sleights[index]);
+                spoiler.push("  " + place.name + ": " + getSleightName(sleights[index]));
+            });
+            spoiler.push("");
+        }
+
+        function buildMoogleShops(settings, levers, spoiler) {
+            if (settings.moogleMode === "no") {
+                return;
+            }
+            if (settings.moogleMode === "any") {
+                levers.moogle_any_card = true;
+            }
+            var nextRandom = makeRandom(settings.seed, "moogle shops");
+            levers.moogle_pools = [];
+            spoiler.push("Moogle shops (weights of the four pack tiers)");
+            MOOGLE_CATEGORIES.forEach(function (category) {
+                var cards = keepSoraCards(category.cards).map(function (card) {
+                    var weights = [];
+                    for (var tier = 0; tier < MOOGLE_TIER_COUNT; tier++) {
+                        weights.push(randomWholeNumber(nextRandom, 1, MOOGLE_LARGEST_WEIGHT));
+                    }
+                    spoiler.push("  " + category.name + " " + card.name + ": " + weights.join(" "));
+                    return { card: card.id, weights: weights };
+                });
+                levers.moogle_pools.push({ category: category.category, cards: cards });
+            });
+            spoiler.push("");
+        }
+
+        function getVanillaLists(listName) {
+            return getWorldIds().map(function (worldId) {
+                return { world: worldId, entries: copyVanillaList(worldId, listName) };
+            });
+        }
+
+        function makeShuffledLists(settings, listName) {
+            var nextRandom = makeRandom(settings.seed, listName + " card lists");
+            var listsByWorld = getVanillaLists(listName).filter(function (worldList) {
+                return listName !== "chest" || worldList.world !== WORLD_WITHOUT_BASIC_CHEST_CARDS;
+            });
+            shuffleSpecialCards(nextRandom, listsByWorld);
+            return listsByWorld;
+        }
+
+        function buildUnlockedDrops(settings, levers, spoiler) {
+            spoiler.push("Object and chest card lists (card weight)");
+            [{ name: "chest", key: "chest_cards", title: "Chests" }, { name: "object", key: "object_cards", title: "Objects" }].forEach(function (list) {
+                spoiler.push("  " + list.title);
+                makeShuffledLists(settings, list.name).forEach(function (worldList) {
+                    getWorldDropEntry(levers, worldList.world)[list.key] = worldList.entries;
+                    spoiler.push("    " + WORLD_NAMES[worldList.world] + ": " + describeDropList(worldList.entries));
+                });
+            });
+            spoiler.push("");
+        }
+
+        function getOneRollList(settings, nextRandom, worldId, listName) {
+            if (settings.dropMode === "own") {
+                return scaleToHundred(getOddsEntries(worldId, listName));
+            }
+            return makeRandomOdds(nextRandom, getSoraBattleCards(), RANDOM_LIST_SIZE);
+        }
+
+        function buildAnyDrops(settings, levers, spoiler) {
+            var nextRandom = makeRandom(settings.seed, "random drops");
+            levers.drops_ignore_unlocks = true;
+            spoiler.push("Object and chest card odds (percent)");
+            getWorldIds().forEach(function (worldId) {
+                var entry = getWorldOddsEntry(levers, worldId);
+                entry.chest_cards = getOneRollList(settings, nextRandom, worldId, "chest");
+                entry.object_cards = getOneRollList(settings, nextRandom, worldId, "object");
+                spoiler.push("  " + WORLD_NAMES[worldId]);
+                spoiler.push("    Chests: " + describeDropList(entry.chest_cards));
+                spoiler.push("    Objects: " + describeDropList(entry.object_cards));
+            });
+            spoiler.push("");
+        }
+
+        function buildDrops(settings, levers, spoiler) {
+            if (settings.dropMode === "unlocked") {
+                buildUnlockedDrops(settings, levers, spoiler);
+            }
+            if (settings.dropMode === "any" || settings.dropMode === "own") {
+                buildAnyDrops(settings, levers, spoiler);
+            }
+        }
+
+        function makeJokerList() {
+            var cards = [{ card: RANDOM_JOKER_ID, weight: ODDS_TOTAL }];
+            MAP_CARDS.slice(0, MAP_CARDS.length - 1).forEach(function (card) {
+                cards.push({ card: card.id, weight: 0 });
+            });
+            return cards;
+        }
+
+        function getMapList(settings, nextRandom, worldId) {
+            if (settings.mapCardMode === "joker") {
+                var vanilla = getVanillaMapDrops(worldId);
+                return { cards: makeJokerList(), joker: vanilla.joker, key: vanilla.keyToRewards };
+            }
+            if (settings.mapCardMode === "random") {
+                var rates = makeRandomRates(nextRandom);
+                return { cards: makeRandomOdds(nextRandom, MAP_CARDS, null), joker: rates[RANDOM_JOKER_ID], key: rates[KEY_TO_REWARDS_ID] };
+            }
+            return {
+                cards: scaleToHundred(getOddsEntries(worldId, "map")),
+                joker: getOdds(worldId, "rates", RANDOM_JOKER_ID),
+                key: getOdds(worldId, "rates", KEY_TO_REWARDS_ID)
+            };
+        }
+
+        function buildMapCards(settings, levers, spoiler) {
+            if (settings.mapCardMode === "no") {
+                return;
+            }
+            if (settings.mapCardMode === "joker") {
+                spoiler.push("Enemies always drop a Random Joker map card");
+            } else {
+                spoiler.push("Enemy map card odds (percent)");
+            }
+            var nextRandom = makeRandom(settings.seed, "map card random odds");
+            getWorldIds().forEach(function (worldId) {
+                if (!hasList(worldId, "map")) {
+                    return;
+                }
+                var list = getMapList(settings, nextRandom, worldId);
+                var entry = getWorldOddsEntry(levers, worldId);
+                entry.map_cards = list.cards;
+                entry.random_joker_rate = list.joker;
+                entry.key_to_rewards_rate = list.key;
+                if (settings.mapCardMode !== "joker") {
+                    var texts = list.cards.map(function (card) { return getMapCardName(card.card) + " " + card.weight; });
+                    spoiler.push("  " + WORLD_NAMES[worldId] + ": " + texts.join(", "));
+                    spoiler.push("    Random Joker " + list.joker + ", Key to Rewards " + list.key);
+                }
+            });
+            spoiler.push("");
+        }
+
+        function buildSeed(settings) {
+            var levers = { version: LEVERS_FORMAT_VERSION, seed: settings.seed };
+            var spoiler = ["KHRECOM seed " + settings.seed, ""];
+            var bossSetup = makeBossSetup(settings);
+            buildCardCp(settings, levers, spoiler);
+            buildStartingDeck(settings, levers, spoiler);
+            buildWorldOrder(settings, levers, spoiler);
+            buildFloorLayouts(settings, levers, spoiler);
+            buildStoryDoors(settings, levers, spoiler);
+            buildEnemySwaps(settings, levers, spoiler);
+            buildBossFights(settings, levers, spoiler, bossSetup);
+            buildEnemyStats(settings, levers, spoiler);
+            buildEnemyDecks(settings, levers, spoiler);
+            buildCardPool(settings, levers, spoiler, bossSetup);
+            buildSleightPool(settings, levers, spoiler);
+            buildMoogleShops(settings, levers, spoiler);
+            buildPowers(settings, levers, spoiler);
+            buildDrops(settings, levers, spoiler);
+            buildMapCards(settings, levers, spoiler);
+            buildCardDrops(settings, levers, spoiler);
+            buildCardValues(settings, levers, spoiler);
+            if (spoiler.length === 2) {
+                spoiler.push("Every setting is vanilla.");
+            }
+            return { levers: levers, spoiler: spoiler.join("\n") };
+        }
+
+        var ownPowers = {};
+
+        function resetPowerGroup(group) {
+            ownPowers[group.key] = {};
+            group.rows.forEach(function (row) {
+                ownPowers[group.key][row.id] = row.powers.slice();
+            });
+        }
+
+        function isGravity(group, row) {
+            if (group.key === "sleight") {
+                return GRAVITY_SLEIGHTS.indexOf(row.id) !== -1;
+            }
+            return GRAVITY_CARDS.indexOf(row.id) !== -1;
+        }
+
+        function getLargestPower(group, row) {
+            if (isGravity(group, row)) {
+                return LARGEST_GRAVITY_POWER;
+            }
+            return LARGEST_POWER;
+        }
+
+        function makeRandomPowers(nextRandom, group, row, lowest, highest) {
+            return row.powers.map(function (power) {
+                if (power === 0) {
+                    return 0;
+                }
+                var newPower = Math.round(power * randomWholeNumber(nextRandom, lowest, highest) / 100);
+                return Math.min(newPower, getLargestPower(group, row));
+            });
+        }
+
+        function getPowerMode(group) {
+            return getValue(group.key + "-power-mode");
+        }
+
+        function readPowerSettings() {
+            return POWER_GROUPS.map(function (group) {
+                return {
+                    group: group,
+                    mode: getPowerMode(group),
+                    lowest: readNumber(group.key + "-power-lowest"),
+                    highest: readNumber(group.key + "-power-highest")
+                };
+            });
+        }
+
+        function findPowerProblem(settings) {
+            for (var index = 0; index < settings.powers.length; index++) {
+                var power = settings.powers[index];
+                var lowestIsGood = isWholeNumberBetween(power.lowest, 0, LARGEST_POWER_PERCENT);
+                var highestIsGood = isWholeNumberBetween(power.highest, 0, LARGEST_POWER_PERCENT);
+                if (!lowestIsGood || !highestIsGood) {
+                    return "The power limits must be whole numbers from 0 to " + LARGEST_POWER_PERCENT + " percent.";
+                }
+                if (power.lowest > power.highest) {
+                    return "The lowest power can not be above the highest.";
+                }
+            }
+            return null;
+        }
+
+        function arePowersEqual(first, second) {
+            return first.every(function (power, index) { return power === second[index]; });
+        }
+
+        function describePowers(group, row, powers) {
+            var texts = [];
+            group.columns.forEach(function (column, index) {
+                if (row.powers[index] !== 0) {
+                    texts.push(row.powers[index] + " -> " + powers[index]);
+                }
+            });
+            return texts.join(", ");
+        }
+
+        function buildPowers(settings, levers, spoiler) {
+            settings.powers.forEach(function (power) {
+                if (power.mode === "no") {
+                    return;
+                }
+                var group = power.group;
+                var nextRandom = makeRandom(settings.seed, group.key + " power");
+                spoiler.push(group.title);
+                group.rows.forEach(function (row) {
+                    var powers = ownPowers[group.key][row.id];
+                    if (power.mode === "random") {
+                        powers = makeRandomPowers(nextRandom, group, row, power.lowest, power.highest);
+                    }
+                    if (arePowersEqual(powers, row.powers)) {
+                        return;
+                    }
+                    var entry = { powers: powers.slice() };
+                    entry[group.idName] = row.id;
+                    getOrCreateList(levers, group.lever).push(entry);
+                    spoiler.push("  " + row.name + ": " + describePowers(group, row, powers));
+                });
+                spoiler.push("");
+            });
+        }
+
+        function savePowers() {
+            try {
+                localStorage.setItem(POWERS_STORAGE_KEY, JSON.stringify(ownPowers));
+            } catch (error) {
+                return;
+            }
+        }
+
+        function copySavedPowers(group, savedGroup) {
+            group.rows.forEach(function (row) {
+                var savedPowers = savedGroup[row.id];
+                if (!Array.isArray(savedPowers) || savedPowers.length !== row.powers.length) {
+                    return;
+                }
+                var areGood = savedPowers.every(function (power, index) {
+                    if (row.powers[index] === 0) {
+                        return power === 0;
+                    }
+                    return isWholeNumberBetween(power, 0, getLargestPower(group, row));
+                });
+                if (areGood) {
+                    ownPowers[group.key][row.id] = savedPowers.slice();
+                }
+            });
+        }
+
+        function loadPowers() {
+            POWER_GROUPS.forEach(resetPowerGroup);
+            var saved = null;
+            try {
+                saved = JSON.parse(localStorage.getItem(POWERS_STORAGE_KEY));
+            } catch (error) {
+                saved = null;
+            }
+            if (!isSavedOddsTable(saved)) {
+                return;
+            }
+            OLD_CARD_POWER_KEYS.forEach(function (oldKey) {
+                if (isSavedOddsTable(saved[oldKey])) {
+                    copySavedPowers(POWER_GROUPS[0], saved[oldKey]);
+                }
+            });
+            POWER_GROUPS.forEach(function (group) {
+                if (isSavedOddsTable(saved[group.key])) {
+                    copySavedPowers(group, saved[group.key]);
+                }
+            });
+        }
+
+        function getPowerInputId(group, row, index) {
+            return "power-" + group.key + "-" + row.id + "-" + index;
+        }
+
+        function readPowerInput(group, row, index) {
+            var input = getElement(getPowerInputId(group, row, index));
+            var value = Number(input.value);
+            var largest = getLargestPower(group, row);
+            if (input.value.trim() === "" || !isWholeNumberBetween(value, 0, largest)) {
+                showPowers();
+                showMessage("Power must be a whole number from 0 to " + largest + ".", "error");
+                return;
+            }
+            ownPowers[group.key][row.id][index] = value;
+            savePowers();
+            showMessage("", "");
+        }
+
+        function showPowers() {
+            POWER_GROUPS.forEach(function (group) {
+                group.rows.forEach(function (row) {
+                    group.columns.forEach(function (column, index) {
+                        if (row.powers[index] !== 0) {
+                            getElement(getPowerInputId(group, row, index)).value = String(ownPowers[group.key][row.id][index]);
+                        }
+                    });
+                });
+            });
+        }
+
+        function makePowerInput(group, row, index) {
+            var input = document.createElement("input");
+            input.type = "number";
+            input.min = "0";
+            input.max = String(getLargestPower(group, row));
+            input.step = "1";
+            input.id = getPowerInputId(group, row, index);
+            input.setAttribute("aria-label", row.name + " " + group.columns[index]);
+            input.addEventListener("change", function () { readPowerInput(group, row, index); });
+            return input;
+        }
+
+        function addPowerRow(tableBody, group, row) {
+            var tableRow = document.createElement("tr");
+            var nameCell = document.createElement("th");
+            nameCell.scope = "row";
+            nameCell.textContent = row.name;
+            tableRow.appendChild(nameCell);
+            group.columns.forEach(function (column, index) {
+                var cell = document.createElement("td");
+                if (row.powers[index] !== 0) {
+                    cell.appendChild(makePowerInput(group, row, index));
+                }
+                tableRow.appendChild(cell);
+            });
+            tableBody.appendChild(tableRow);
+        }
+
+        function resetOwnPowers(group) {
+            resetPowerGroup(group);
+            savePowers();
+            showPowers();
+            showMessage("", "");
+        }
+
+        function fillRandomPowers(group) {
+            var problem = findPowerProblem({ powers: readPowerSettings() });
+            if (problem !== null) {
+                showMessage(problem, "error");
+                return;
+            }
+            var nextRandom = makeRandom(String(Math.random()), "filled powers");
+            var lowest = readNumber(group.key + "-power-lowest");
+            var highest = readNumber(group.key + "-power-highest");
+            group.rows.forEach(function (row) {
+                ownPowers[group.key][row.id] = makeRandomPowers(nextRandom, group, row, lowest, highest);
+            });
+            savePowers();
+            showPowers();
+            showMessage("", "");
+        }
+
+        function setUpPowers() {
+            POWER_GROUPS.forEach(function (group) {
+                group.rows.forEach(function (row) {
+                    addPowerRow(getElement(group.key + "-power-rows"), group, row);
+                });
+                getElement(group.key + "-power-reset").addEventListener("click", function () { resetOwnPowers(group); });
+                getElement(group.key + "-power-fill").addEventListener("click", function () { fillRandomPowers(group); });
+            });
+            loadPowers();
+            showPowers();
+        }
+
+        function getOwnOddsLists(settings) {
+            var lists = [];
+            if (settings.dropMode === "own") {
+                lists.push({ name: "chest", title: "chest" });
+                lists.push({ name: "object", title: "object" });
+            }
+            if (settings.mapCardMode === "own") {
+                lists.push({ name: "map", title: "enemy map card" });
+            }
+            return lists;
+        }
+
+        function isOddsListOn(listName) {
+            if (listName === "chest" || listName === "object") {
+                return getValue("drop-mode") === "own";
+            }
+            return getValue("map-card-mode") === "own";
+        }
+
+        function showOdds() {
+            getSoraBattleCards().forEach(function (card) {
+                showOddsInput("chest", card.id);
+                showOddsInput("object", card.id);
+            });
+            MAP_CARDS.forEach(function (card) {
+                showOddsInput("map", card.id);
+            });
+            showOddsInput("rates", RANDOM_JOKER_ID);
+            showOddsInput("rates", KEY_TO_REWARDS_ID);
+            getElement("odds-total-chest").textContent = describeTotal("chest");
+            getElement("odds-total-object").textContent = describeTotal("object");
+            getElement("odds-total-map").textContent = describeTotal("map");
+            getElement("odds-battle-cards").hidden = !isOddsListOn("chest");
+            getElement("odds-map-cards").hidden = !isOddsListOn("map");
+            getElement("odds-section").hidden = !isOddsListOn("chest") && !isOddsListOn("map");
+            getElement("odds-copy").disabled = getValue("odds-world") === ALL_WORLDS;
+        }
+
+        function fillRandomOdds() {
+            var nextRandom = makeRandom(String(Math.random()), "filled odds");
+            getActiveOddsLists().forEach(function (listName) {
+                getChosenWorldIds(listName).forEach(function (worldId) {
+                    if (listName === "rates") {
+                        cardOdds[worldId].rates = makeRandomRates(nextRandom);
+                    } else {
+                        var cardCount = null;
+                        if (listName !== "map") {
+                            cardCount = RANDOM_LIST_SIZE;
+                        }
+                        cardOdds[worldId][listName] = makeOddsTable(makeRandomOdds(nextRandom, getOddsCards(listName), cardCount));
+                    }
+                });
+            });
+            finishOddsChange();
+        }
+
+        function showConditionalParts() {
+            var parts = document.querySelectorAll("[data-shown-with]");
+            parts.forEach(function (part) {
+                var wantedValues = part.getAttribute("data-shown-for").split(" ");
+                part.hidden = wantedValues.indexOf(getValue(part.getAttribute("data-shown-with"))) === -1;
+            });
+            var jokerOption = getElement("map-card-mode").querySelector("option[value=joker]");
+            jokerOption.disabled = getValue("door-mode") !== "yes";
+            if (jokerOption.disabled && getValue("map-card-mode") === "joker") {
+                getElement("map-card-mode").value = "no";
+            }
+        }
+
+        function handleSettingChange() {
+            showConditionalParts();
+            saveSettings();
+            showConditionalParts();
+            showOdds();
+        }
+
+        function setUpOdds() {
+            makeOddsTables();
+            loadOdds();
+            getElement("odds-world").addEventListener("change", showOdds);
+            getElement("odds-reset").addEventListener("click", resetChosenOdds);
+            getElement("odds-clear").addEventListener("click", clearChosenOdds);
+            getElement("odds-random").addEventListener("click", fillRandomOdds);
+            getElement("odds-copy").addEventListener("click", copyChosenOdds);
+        }
+
+        function setUpPage() {
+            loadSettings();
+            setUpOdds();
+            setUpPowers();
+            if (getValue("seed").trim() === "") {
+                makeNewSeed();
+            }
+            showConditionalParts();
+            showOdds();
+            for (var index = 0; index < SETTING_IDS.length; index++) {
+                getElement(SETTING_IDS[index]).addEventListener("change", handleSettingChange);
+            }
+            getElement("new-seed").addEventListener("click", makeNewSeed);
+            getElement("generate").addEventListener("click", generateSeedMod);
+            getElement("preview").addEventListener("click", showSpoiler);
+            getElement("reset").addEventListener("click", resetSettings);
+        }
+
+        function getSafeFileName(text) {
+            return text.replace(/[^A-Za-z0-9_-]/g, "_");
+        }
+
+        function buildModYml(seed) {
+            var lines = [
+                "title: KHRECOM Randomizer Seed " + getSafeFileName(seed),
+                "originalAuthor: Gicu",
+                "description: KHRECOM Randomizer lever seed.  For use with gaithern/KHRECOM-RANDOMIZER",
+                "assets:",
+                "- name: scripts/io_packages/json/levers.json",
+                "  method: copy",
+                "  source:",
+                "  - name: levers.json",
+                ""
+            ];
+            return lines.join("\n");
+        }
+
+        function buildCrcTable() {
+            var table = [];
+            for (var index = 0; index < 256; index++) {
+                var value = index;
+                for (var bit = 0; bit < 8; bit++) {
+                    if ((value & 1) === 1) {
+                        value = 0xEDB88320 ^ (value >>> 1);
+                    } else {
+                        value = value >>> 1;
+                    }
+                }
+                table.push(value >>> 0);
+            }
+            return table;
+        }
+
+        var CRC_TABLE = buildCrcTable();
+
+        function getCrc32(bytes) {
+            var crc = 0xFFFFFFFF;
+            for (var index = 0; index < bytes.length; index++) {
+                var tableIndex = (crc ^ bytes[index]) & 0xFF;
+                crc = CRC_TABLE[tableIndex] ^ (crc >>> 8);
+            }
+            return (crc ^ 0xFFFFFFFF) >>> 0;
+        }
+
+        function getDosTime(date) {
+            return (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2);
+        }
+
+        function getDosDate(date) {
+            return ((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate();
+        }
+
+        function buildZip(files) {
+            var encoder = new TextEncoder();
+            var now = new Date();
+            var dosTime = getDosTime(now);
+            var dosDate = getDosDate(now);
+            var entries = [];
+            var totalSize = 22;
+            for (var index = 0; index < files.length; index++) {
+                var nameBytes = encoder.encode(files[index].name);
+                var dataBytes = encoder.encode(files[index].text);
+                entries.push({ nameBytes: nameBytes, dataBytes: dataBytes, crc: getCrc32(dataBytes), offset: 0 });
+                totalSize = totalSize + 30 + nameBytes.length + dataBytes.length;
+                totalSize = totalSize + 46 + nameBytes.length;
+            }
+            var output = new Uint8Array(totalSize);
+            var view = new DataView(output.buffer);
+            var position = 0;
+            for (var entryIndex = 0; entryIndex < entries.length; entryIndex++) {
+                var entry = entries[entryIndex];
+                entry.offset = position;
+                view.setUint32(position, 0x04034B50, true);
+                view.setUint16(position + 4, 20, true);
+                view.setUint16(position + 6, 0x0800, true);
+                view.setUint16(position + 8, 0, true);
+                view.setUint16(position + 10, dosTime, true);
+                view.setUint16(position + 12, dosDate, true);
+                view.setUint32(position + 14, entry.crc, true);
+                view.setUint32(position + 18, entry.dataBytes.length, true);
+                view.setUint32(position + 22, entry.dataBytes.length, true);
+                view.setUint16(position + 26, entry.nameBytes.length, true);
+                view.setUint16(position + 28, 0, true);
+                output.set(entry.nameBytes, position + 30);
+                output.set(entry.dataBytes, position + 30 + entry.nameBytes.length);
+                position = position + 30 + entry.nameBytes.length + entry.dataBytes.length;
+            }
+            var centralStart = position;
+            for (var centralIndex = 0; centralIndex < entries.length; centralIndex++) {
+                var centralEntry = entries[centralIndex];
+                view.setUint32(position, 0x02014B50, true);
+                view.setUint16(position + 4, 20, true);
+                view.setUint16(position + 6, 20, true);
+                view.setUint16(position + 8, 0x0800, true);
+                view.setUint16(position + 10, 0, true);
+                view.setUint16(position + 12, dosTime, true);
+                view.setUint16(position + 14, dosDate, true);
+                view.setUint32(position + 16, centralEntry.crc, true);
+                view.setUint32(position + 20, centralEntry.dataBytes.length, true);
+                view.setUint32(position + 24, centralEntry.dataBytes.length, true);
+                view.setUint16(position + 28, centralEntry.nameBytes.length, true);
+                view.setUint16(position + 30, 0, true);
+                view.setUint16(position + 32, 0, true);
+                view.setUint16(position + 34, 0, true);
+                view.setUint16(position + 36, 0, true);
+                view.setUint32(position + 38, 0, true);
+                view.setUint32(position + 42, centralEntry.offset, true);
+                output.set(centralEntry.nameBytes, position + 46);
+                position = position + 46 + centralEntry.nameBytes.length;
+            }
+            var centralSize = position - centralStart;
+            view.setUint32(position, 0x06054B50, true);
+            view.setUint16(position + 4, 0, true);
+            view.setUint16(position + 6, 0, true);
+            view.setUint16(position + 8, entries.length, true);
+            view.setUint16(position + 10, entries.length, true);
+            view.setUint32(position + 12, centralSize, true);
+            view.setUint32(position + 16, centralStart, true);
+            view.setUint16(position + 20, 0, true);
+            return output;
+        }
+
+        function downloadFile(bytes, fileName) {
+            var blob = new Blob([bytes], { type: "application/zip" });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement("a");
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+        }
+
+        function showMessage(text, kind) {
+            var message = getElement("message");
+            message.textContent = text;
+            message.className = kind;
+        }
+
+        function makeNewSeed() {
+            var seed = "";
+            for (var index = 0; index < 10; index++) {
+                seed = seed + String(Math.floor(Math.random() * 10));
+            }
+            getElement("seed").value = seed;
+            saveSettings();
+        }
+
+        function generateSeedMod() {
+            var settings = readSettings();
+            var problem = findSettingsProblem(settings);
+            if (problem !== null) {
+                showMessage(problem, "error");
+                return;
+            }
+            var result = buildSeed(settings);
+            var files = [
+                { name: "mod.yml", text: buildModYml(settings.seed) },
+                { name: "levers.json", text: JSON.stringify(result.levers, null, 2) },
+                { name: "spoiler_log.txt", text: result.spoiler }
+            ];
+            var fileName = "khrecom_seed_" + getSafeFileName(settings.seed) + ".zip";
+            downloadFile(buildZip(files), fileName);
+            showMessage("Downloaded " + fileName + ". Add it to OpenKH as its own mod.", "success");
+        }
+
+        function showSpoiler() {
+            var settings = readSettings();
+            var problem = findSettingsProblem(settings);
+            if (problem !== null) {
+                showMessage(problem, "error");
+                return;
+            }
+            var spoiler = getElement("spoiler");
+            spoiler.textContent = buildSeed(settings).spoiler;
+            spoiler.hidden = false;
+            showMessage("", "");
+        }
+
+        function saveSettings() {
+            var saved = {};
+            for (var index = 0; index < SETTING_IDS.length; index++) {
+                var element = getElement(SETTING_IDS[index]);
+                if (element.type === "checkbox") {
+                    saved[SETTING_IDS[index]] = element.checked;
+                } else {
+                    saved[SETTING_IDS[index]] = element.value;
+                }
+            }
+            try {
+                localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(saved));
+            } catch (error) {
+                return;
+            }
+        }
+
+        function loadSettings() {
+            var saved = null;
+            try {
+                saved = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY));
+            } catch (error) {
+                saved = null;
+            }
+            if (saved === null || typeof saved !== "object") {
+                return;
+            }
+            for (var index = 0; index < SETTING_IDS.length; index++) {
+                var id = SETTING_IDS[index];
+                if (saved[id] === undefined) {
+                    continue;
+                }
+                var element = getElement(id);
+                if (element.type === "checkbox") {
+                    element.checked = saved[id] === true;
+                } else {
+                    element.value = saved[id];
+                }
+            }
+        }
+
+        function resetSettings() {
+            try {
+                localStorage.removeItem(SETTINGS_STORAGE_KEY);
+                localStorage.removeItem(ODDS_STORAGE_KEY);
+                localStorage.removeItem(POWERS_STORAGE_KEY);
+            } catch (error) {
+                showMessage("", "");
+            }
+            window.location.reload();
+        }
+
+        setUpPage();
+</script>
+</body>
+</html>

@@ -24,7 +24,9 @@ end
 
 local function update()
     khrecom.set_journal_card_found(BLIZZARD_JOURNAL_INDEX, 1)
-    khrecom.disable_level_up_sleights()
+    if not settings.has_lever("level_up_sleights") then
+        khrecom.disable_level_up_sleights()
+    end
     apply_attack_power()
     khrecom.set_friend_flag(FRIEND_FLAG_VALUE)
 end
@@ -32,6 +34,10 @@ end
 function _OnInit()
     if GAME_ID == 0x9E3134F5 and ENGINE_TYPE == "BACKEND" then
         require("VersionCheck")
+        if not settings.has_seed_settings() then
+            canExecute = false
+            ConsolePrint("No Archipelago seed settings, not running " .. LUAGUI_NAME)
+        end
     else
         ConsolePrint("RE:CoM not detected, not running script")
     end

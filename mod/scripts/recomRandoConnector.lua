@@ -384,6 +384,10 @@ end
 function _OnInit()
     if GAME_ID == 0x9E3134F5 and ENGINE_TYPE == "BACKEND" then
         require("VersionCheck")
+        if not settings.has_seed_settings() then
+            canExecute = false
+            ConsolePrint("No Archipelago seed settings, not running " .. LUAGUI_NAME)
+        end
         client_files.get_client_communication_path()
         reset_state()
         if canExecute then

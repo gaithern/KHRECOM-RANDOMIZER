@@ -3,6 +3,7 @@ LUAGUI_AUTH = "Gicu"
 LUAGUI_DESC = "RE: Chain of Memories AP Integration: Exit Hall story fights follow story progress"
 
 local khrecom = require("khrecom_lua_library")
+local settings = require("recom_settings")
 
 local FRAMES_BETWEEN_UPDATES = 120
 local NEW_GAME_TIME_PLAYED = 5
@@ -94,6 +95,10 @@ end
 function _OnInit()
     if GAME_ID == 0x9E3134F5 and ENGINE_TYPE == "BACKEND" then
         require("VersionCheck")
+        if not settings.has_seed_settings() then
+            canExecute = false
+            ConsolePrint("No Archipelago seed settings, not running " .. LUAGUI_NAME)
+        end
     else
         ConsolePrint("RE:CoM not detected, not running script")
     end

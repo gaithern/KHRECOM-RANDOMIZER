@@ -59,11 +59,29 @@ local function has_seed_settings()
     return seed_vars["settings"] ~= nil
 end
 
+local function get_levers()
+    local levers = seed_vars["levers"]
+    if type(levers) ~= "table" then
+        return nil
+    end
+    return levers
+end
+
+local function has_lever(name)
+    local levers = get_levers()
+    if levers == nil then
+        return false
+    end
+    return levers[name] ~= nil
+end
+
 return {
     FLOOR_COUNT = FLOOR_COUNT,
     get_floor_worlds = get_floor_worlds,
     get_card_sets = get_card_sets,
     get_attack_power = get_attack_power,
     get_exp_multiplier = get_exp_multiplier,
-    has_seed_settings = has_seed_settings
+    has_seed_settings = has_seed_settings,
+    get_levers = get_levers,
+    has_lever = has_lever
 }

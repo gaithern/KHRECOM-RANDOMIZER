@@ -1,6 +1,6 @@
 local json = require("json")
 
-local SEED_FILE_NAMES = {"settings"}
+local SEED_FILE_NAMES = {"settings", "levers"}
 
 local function get_seed_folder()
     if type(SCRIPT_PATH) ~= "string" then
@@ -30,8 +30,8 @@ local function load_seed_vars()
     for _, file_name in ipairs(SEED_FILE_NAMES) do
         seed_vars[file_name] = load_seed_file(seed_folder .. file_name .. ".json")
     end
-    if seed_vars["settings"] == nil then
-        ConsolePrint("No seed settings found, is the seed mod installed?")
+    if seed_vars["settings"] == nil and seed_vars["levers"] == nil then
+        ConsolePrint("No seed found, is a seed mod installed?")
     end
     return seed_vars
 end
