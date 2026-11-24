@@ -511,7 +511,8 @@
             </select>
         </div>
         <p class="help" data-shown-with="map-card-mode" data-shown-for="joker">
-            Key to Rewards can still drop, and while you hold 9 Random Jokers the game gives other map cards.
+            Key to Rewards can still drop, and while you hold 9 Random Jokers the game gives other map cards. Random Jokers only
+            exist at value 0, so the enemy map card value settings are not used.
         </p>
     </section>
 
@@ -2218,6 +2219,9 @@
         }
 
         function getMapValueWeights(settings, nextRandom) {
+            if (settings.mapCardMode === "joker") {
+                return RANDOM_JOKER_VALUE_WEIGHTS;
+            }
             var weights = VANILLA_MAP_VALUE_WEIGHTS;
             if (settings.mapValueMode === "even") {
                 weights = EVEN_VALUE_WEIGHTS;
@@ -2233,7 +2237,7 @@
 
         function addMapValues(settings, levers, lines) {
             var areMapValuesLimited = areValuesLimited(settings) && settings.cardValueMaps;
-            if (settings.mapValueMode === "vanilla" && !areMapValuesLimited) {
+            if (settings.mapValueMode === "vanilla" && !areMapValuesLimited && settings.mapCardMode !== "joker") {
                 return;
             }
             var nextRandom = makeRandom(settings.seed, "map card values");
@@ -2292,6 +2296,7 @@
         var CHEAP_VALUE_COUNT = 4;
         var EVEN_VALUE_WEIGHTS = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10];
         var VANILLA_CHEST_VALUE_WEIGHTS = [5, 15, 15, 16, 14, 10, 10, 6, 5, 4];
+        var RANDOM_JOKER_VALUE_WEIGHTS = [100, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         var VANILLA_MAP_VALUE_WEIGHTS = [15, 15, 15, 10, 10, 10, 10, 5, 5, 5];
         var VANILLA_MOOGLE_VALUE_WEIGHTS = [
             [2, 15, 20, 20, 15, 15, 5, 3, 3, 2],
