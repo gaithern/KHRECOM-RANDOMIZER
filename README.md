@@ -81,6 +81,8 @@ How the page builds a seed:
 - Card values can be limited to some values or given weights. This sets the chest, Heartless and Moogle value weights, moves boss
   rewards, story cards and the starting deck to allowed values, and can include enemy map cards. Friend cards and the fallback
   for 99 copies of a card are not changed.
+- With a world order, the levers script gives Donald and Goofy in every world but Traverse Town on floors 1 to 10. They leave on floor 11 like always.
+- High Jump, Glide and Superglide work exactly while Sora has their sleight, so they can be shuffled like the others.
 - The starting deck has 13 cards, at least one attack card, and stays under 275 CP with the seed's own card CP.
 
 Every key is optional; a missing key keeps the game's data.

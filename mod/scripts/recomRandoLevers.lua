@@ -244,6 +244,7 @@ end
 local function record_floor_levers()
     if type(levers.world_order) == "table" then
         khrecom.set_world_order(levers.world_order)
+        khrecom.set_donald_and_goofy_join_early(true)
     end
     if type(levers.floor_layout_order) == "table" then
         khrecom.set_floor_layout_order(levers.floor_layout_order)
@@ -308,7 +309,17 @@ local function record_starting_deck()
     end
 end
 
+local function are_sleights_moved()
+    if levers.card_sleights ~= nil or levers.event_sleights ~= nil or levers.level_up_sleights ~= nil then
+        return true
+    end
+    return levers.room_of_rewards ~= nil or levers.bounties ~= nil
+end
+
 local function record_sleight_levers()
+    if are_sleights_moved() then
+        khrecom.set_movement_abilities_follow_sleights(true)
+    end
     if type(levers.card_sleights) == "table" then
         for _, entry in ipairs(levers.card_sleights) do
             khrecom.set_card_sleight(entry.card, entry.number, entry.sleight)
