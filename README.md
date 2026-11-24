@@ -83,6 +83,8 @@ How the page builds a seed:
   for 99 copies of a card are not changed.
 - With a world order, the levers script gives Donald and Goofy in every world but Traverse Town on floors 1 to 10. They leave on floor 11 like always.
 - High Jump, Glide and Superglide work exactly while Sora has their sleight, so they can be shuffled like the others.
+- Boss stats can be scaled: a boss keeps the game's numbers on its normal floors, and other floors follow a curve from the nearest
+  of them.
 - The starting deck has 13 cards, at least one attack card, and stays under 275 CP with the seed's own card CP.
 
 Every key is optional; a missing key keeps the game's data.
@@ -137,6 +139,7 @@ Every key is optional; a missing key keeps the game's data.
 | `enemy_swaps` | `set_world_enemy_swaps` | Per world, which Heartless kind replaces which, on the field and in battles. |
 | `card_powers` | `set_card_power` | The 4 powers of a card, percent of attack (attack cards: strike, thrust, finisher, 0). |
 | `sleight_powers` | `set_sleight_power` | The 4 powers of a sleight. |
+| `boss_floor_stats` | `set_enemy_floor_stats` | Per boss stat file, 13 floors of `{hp, attack, exp}`. |
 | `starting_deck` | `set_starting_deck` | The 13 cards of Sora's new game deck (`{card, value}`). |
 | `boss_fights` | `set_boss_fight` | Which boss (`kind`, `variant`) is in which arena (`world` 0 is the Exit Hall). |
 | `enemy_kind_stats` | `set_enemy_kind_multipliers` | HP, attack and EXP multipliers of one enemy kind. |

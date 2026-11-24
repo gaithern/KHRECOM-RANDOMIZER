@@ -303,6 +303,15 @@ local function record_enemy_kind_stats()
     end
 end
 
+local function record_boss_floor_stats()
+    if type(levers.boss_floor_stats) ~= "table" then
+        return
+    end
+    for _, entry in ipairs(levers.boss_floor_stats) do
+        khrecom.set_enemy_floor_stats(entry.file, entry.floors)
+    end
+end
+
 local function record_starting_deck()
     if type(levers.starting_deck) == "table" then
         khrecom.set_starting_deck(levers.starting_deck)
@@ -342,6 +351,7 @@ local function record_levers()
     record_enemy_swaps()
     record_boss_fights()
     record_enemy_kind_stats()
+    record_boss_floor_stats()
     record_starting_deck()
     record_moogle_levers()
     record_event_cards()

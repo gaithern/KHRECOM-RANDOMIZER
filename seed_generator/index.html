@@ -283,6 +283,17 @@
             <label for="deck-highest">Highest card value</label>
             <input type="number" id="deck-highest" min="0" max="9" step="1" value="9">
         </div>
+        <div class="row">
+            <label for="boss-scale-mode">Scale boss stats to the floor</label>
+            <select id="boss-scale-mode">
+                <option value="no">No</option>
+                <option value="yes" selected>Yes</option>
+            </select>
+        </div>
+        <p class="help" data-shown-with="boss-scale-mode" data-shown-for="yes">
+            Bosses keep the game's stats on their normal floors. On other floors HP, attack and EXP grow or shrink with the floor
+            instead of using filler numbers. Cloud, Hades and the other world bosses count all the floors their world can be on as normal.
+        </p>
         <p class="help">Randomize enemy stats: the largest change in percent, different for every enemy. 0 is off.</p>
         <div class="row">
             <label for="stat-hp">HP</label>
@@ -1189,16 +1200,17 @@
         var SETTINGS_STORAGE_KEY = "khrecom-seed-generator-settings-2";
         var SETTING_IDS = [
             "seed", "starting-deck-mode", "starting-heal", "floor-mode", "heartless-mode", "boss-mode", "boss-scope",
-            "enemy-drop-mode", "enemy-deck-mode", "deck-lowest", "deck-highest", "stat-hp", "stat-attack", "stat-exp",
-            "bounty-mode", "rewards-room-mode", "boss-reward-mode", "level-sleight-mode", "friend-sleight-mode",
-            "story-reward-mode", "drop-mode", "moogle-mode", "card-cp-mode", "card-cp-spread", "card-value-mode",
-            "value-allowed-0", "value-allowed-1", "value-allowed-2", "value-allowed-3", "value-allowed-4",
-            "value-allowed-5", "value-allowed-6", "value-allowed-7", "value-allowed-8", "value-allowed-9",
-            "value-weight-0", "value-weight-1", "value-weight-2", "value-weight-3", "value-weight-4",
-            "value-weight-5", "value-weight-6", "value-weight-7", "value-weight-8", "value-weight-9",
-            "card-value-maps", "card-power-mode", "card-power-lowest", "card-power-highest", "sleight-power-mode",
-            "sleight-power-lowest", "sleight-power-highest", "door-mode", "map-card-mode", "floor-layout-mode",
-            "map-value-mode", "object-chance", "object-cap", "enemy-hp", "enemy-attack", "enemy-exp"
+            "enemy-drop-mode", "enemy-deck-mode", "deck-lowest", "deck-highest", "boss-scale-mode", "stat-hp",
+            "stat-attack", "stat-exp", "bounty-mode", "rewards-room-mode", "boss-reward-mode", "level-sleight-mode",
+            "friend-sleight-mode", "story-reward-mode", "drop-mode", "moogle-mode", "card-cp-mode", "card-cp-spread",
+            "card-value-mode", "value-allowed-0", "value-allowed-1", "value-allowed-2", "value-allowed-3",
+            "value-allowed-4", "value-allowed-5", "value-allowed-6", "value-allowed-7", "value-allowed-8",
+            "value-allowed-9", "value-weight-0", "value-weight-1", "value-weight-2", "value-weight-3",
+            "value-weight-4", "value-weight-5", "value-weight-6", "value-weight-7", "value-weight-8",
+            "value-weight-9", "card-value-maps", "card-power-mode", "card-power-lowest", "card-power-highest",
+            "sleight-power-mode", "sleight-power-lowest", "sleight-power-highest", "door-mode", "map-card-mode",
+            "floor-layout-mode", "map-value-mode", "object-chance", "object-cap", "enemy-hp", "enemy-attack",
+            "enemy-exp"
         ];
         var LEVERS_FORMAT_VERSION = 1;
 
@@ -2380,6 +2392,143 @@
             { world: 8, room: 2001, name: "Peter Pan (Neverland)" },
             { world: 9, room: 2002, name: "Beast (Hollow Bastion)" }
         ];
+        var SCALED_BOSS_STATS = [
+            { file: "en0102.epd", name: "Guard Armor", floors: [
+                [160, 10, 48], [206, 11, 111], [229, 14, 179], [251, 16, 245], [274, 19, 312],
+                [301, 21, 379], [328, 24, 446], [354, 26, 513], [381, 29, 580], [419, 30, 672],
+                [476, 30, 768], [552, 30, 864], [648, 30, 960]
+            ] },
+            { file: "en0105.epd", name: "Trickmaster", floors: [
+                [450, 7, 100], [578, 8, 232], [667, 11, 372], [746, 14, 511], [795, 16, 651],
+                [844, 18, 790], [892, 20, 930], [941, 22, 1069], [990, 24, 1209], [1089, 25, 1400],
+                [1238, 26, 1600], [1436, 27, 1800], [1683, 28, 2000]
+            ] },
+            { file: "en0106.epd", name: "Cloud", floors: [
+                [283, 4, 83], [364, 5, 192], [416, 6, 308], [468, 8, 423], [520, 10, 539],
+                [572, 11, 654], [623, 12, 770], [673, 14, 885], [724, 15, 1001], [796, 16, 1159],
+                [905, 16, 1325], [1050, 17, 1490], [1231, 17, 1656]
+            ] },
+            { file: "en0107.epd", name: "Hades", floors: [
+                [381, 6, 100], [490, 7, 232], [560, 9, 372], [630, 11, 511], [700, 13, 651],
+                [770, 14, 790], [838, 16, 930], [906, 17, 1069], [975, 19, 1209], [1072, 20, 1400],
+                [1218, 21, 1600], [1413, 21, 1800], [1657, 22, 2000]
+            ] },
+            { file: "en0108.epd", name: "Jafar", floors: [
+                [373, 12, 100], [480, 13, 232], [550, 15, 372], [620, 17, 511], [690, 19, 651],
+                [760, 21, 790], [827, 23, 930], [895, 26, 1069], [962, 28, 1209], [1058, 30, 1400],
+                [1203, 30, 1600], [1395, 30, 1800], [1635, 30, 2000]
+            ] },
+            { file: "en0109.epd", name: "Oogie Boogie", floors: [
+                [426, 6, 100], [548, 7, 232], [597, 9, 372], [646, 11, 511], [695, 13, 651],
+                [744, 15, 790], [792, 17, 930], [841, 19, 1069], [890, 21, 1209], [979, 22, 1400],
+                [1113, 23, 1600], [1291, 24, 1800], [1513, 25, 2000]
+            ] },
+            { file: "en0110.epd", name: "Parasite Cage", floors: [
+                [453, 5, 100], [583, 6, 232], [653, 8, 372], [723, 10, 511], [793, 12, 651],
+                [863, 14, 790], [939, 16, 930], [1016, 17, 1069], [1092, 19, 1209], [1202, 20, 1400],
+                [1366, 21, 1600], [1584, 21, 1800], [1857, 22, 2000]
+            ] },
+            { file: "en0111.epd", name: "Ursula", floors: [
+                [271, 7, 186], [348, 8, 432], [387, 10, 692], [426, 12, 951], [465, 13, 1211],
+                [510, 15, 1470], [555, 17, 1730], [594, 19, 1989], [633, 21, 2249], [681, 23, 2508],
+                [774, 24, 2866], [898, 25, 3225], [1052, 26, 3583]
+            ] },
+            { file: "en0112.epd", name: "Hook", floors: [
+                [363, 5, 186], [467, 6, 432], [519, 8, 692], [571, 9, 951], [623, 10, 1211],
+                [683, 12, 1470], [744, 13, 1730], [809, 14, 1989], [874, 15, 2249], [939, 16, 2508],
+                [1067, 17, 2866], [1238, 17, 3225], [1451, 18, 3583]
+            ] },
+            { file: "en0113.epd", name: "Dragon Maleficent", floors: [
+                [508, 8, 186], [654, 9, 432], [726, 10, 692], [799, 12, 951], [872, 14, 1211],
+                [956, 16, 1470], [1041, 18, 1730], [1090, 20, 1989], [1148, 22, 2249], [1207, 24, 2508],
+                [1372, 25, 2866], [1591, 26, 3225], [1865, 27, 3583]
+            ] },
+            { file: "en0114.epd", name: "Vexen I", floors: [
+                [477, 6, 295], [614, 6, 684], [682, 8, 1096], [750, 9, 1506], [818, 11, 1918],
+                [898, 12, 2328], [977, 13, 2740], [1057, 15, 3150], [1136, 16, 3562], [1250, 17, 4125],
+                [1420, 18, 4714], [1648, 18, 5304], [1932, 19, 5893]
+            ] },
+            { file: "en0114_2.epd", name: "Vexen II", floors: [
+                [491, 6, 356], [631, 6, 827], [701, 8, 1325], [771, 9, 1820], [841, 11, 2319],
+                [923, 12, 2814], [1004, 14, 3313], [1086, 15, 3808], [1168, 17, 4307], [1285, 17, 4988],
+                [1460, 18, 5700], [1694, 19, 6413], [1986, 19, 7125]
+            ] },
+            { file: "en0115.epd", name: "Darkside", floors: [
+                [185, 9, 194], [238, 10, 451], [265, 12, 723], [291, 14, 994], [318, 16, 1266],
+                [349, 18, 1536], [380, 20, 1808], [410, 23, 2079], [441, 25, 2351], [486, 26, 2722],
+                [552, 27, 3111], [640, 28, 3500], [750, 29, 3889]
+            ] },
+            { file: "en0116.epd", name: "Riku I", floors: [
+                [537, 3, 298], [691, 4, 692], [767, 5, 1110], [844, 5, 1525], [921, 6, 1943],
+                [1010, 7, 2357], [1100, 8, 2775], [1190, 9, 3190], [1279, 10, 3608], [1407, 10, 4177],
+                [1599, 11, 4774], [1855, 11, 5371], [2174, 11, 5968]
+            ] },
+            { file: "en0116_2.epd", name: "Riku II", floors: [
+                [497, 3, 302], [639, 3, 700], [710, 4, 1122], [781, 5, 1542], [852, 6, 1964],
+                [934, 6, 2383], [1017, 7, 2806], [1100, 8, 3225], [1183, 9, 3647], [1301, 9, 4224],
+                [1478, 10, 4827], [1715, 10, 5430], [2011, 10, 6034]
+            ] },
+            { file: "en0116_3.epd", name: "Riku III", floors: [
+                [420, 3, 356], [540, 4, 827], [600, 4, 1325], [660, 5, 1820], [720, 6, 2319],
+                [790, 7, 2814], [860, 8, 3313], [930, 8, 3808], [1000, 9, 4307], [1100, 10, 4988],
+                [1250, 10, 5700], [1450, 10, 6413], [1700, 11, 7125]
+            ] },
+            { file: "en0116_4.epd", name: "Riku IV", floors: [
+                [434, 4, 379], [559, 5, 880], [621, 6, 1411], [683, 7, 1938], [745, 8, 2468],
+                [817, 9, 2995], [890, 10, 3526], [962, 11, 4053], [1034, 12, 4584], [1138, 12, 5308],
+                [1293, 13, 6067], [1500, 13, 6825], [1759, 14, 7583]
+            ] },
+            { file: "en0117.epd", name: "Larxene I", floors: [
+                [489, 3, 294], [629, 3, 683], [699, 4, 1095], [769, 5, 1504], [838, 5, 1916],
+                [920, 6, 2325], [1002, 7, 2737], [1083, 7, 3146], [1165, 8, 3558], [1281, 8, 4120],
+                [1456, 9, 4709], [1689, 9, 5297], [1980, 10, 5886]
+            ] },
+            { file: "en0117_2.epd", name: "Larxene II", floors: [
+                [455, 5, 348], [585, 5, 807], [650, 6, 1294], [715, 8, 1778], [780, 9, 2265],
+                [855, 10, 2749], [931, 11, 3236], [1007, 12, 3720], [1083, 13, 4207], [1191, 14, 4871],
+                [1353, 14, 5567], [1570, 15, 6263], [1841, 16, 6959]
+            ] },
+            { file: "en0118.epd", name: "Axel I", floors: [
+                [420, 5, 75], [540, 6, 174], [600, 7, 279], [660, 8, 383], [720, 9, 488],
+                [790, 11, 593], [860, 12, 698], [930, 13, 802], [1000, 14, 907], [1100, 15, 1050],
+                [1250, 16, 1200], [1450, 16, 1350], [1700, 17, 1500]
+            ] },
+            { file: "en0118_2.epd", name: "Axel II", floors: [
+                [361, 6, 341], [464, 6, 792], [515, 8, 1269], [567, 9, 1744], [618, 11, 2222],
+                [678, 12, 2696], [739, 13, 3174], [799, 15, 3648], [859, 16, 4126], [945, 17, 4778],
+                [1074, 18, 5460], [1245, 18, 6143], [1460, 19, 6825]
+            ] },
+            { file: "en0119.epd", name: "Marluxia I", floors: [
+                [430, 7, 657], [553, 8, 1523], [614, 10, 2442], [676, 12, 3355], [737, 14, 4274],
+                [809, 16, 5187], [880, 18, 6106], [952, 19, 7019], [1024, 21, 7938], [1126, 22, 9192],
+                [1279, 23, 10505], [1484, 24, 11818], [1740, 25, 13131]
+            ] },
+            { file: "en0120.epd", name: "Marluxia II", floors: [
+                [356, 8, 0], [457, 9, 0], [508, 11, 0], [559, 13, 0], [610, 16, 0],
+                [669, 18, 0], [728, 20, 0], [788, 22, 0], [847, 24, 0], [932, 25, 0],
+                [1059, 26, 0], [1228, 27, 0], [1440, 28, 0]
+            ] },
+            { file: "en0132.epd", name: "Marluxia III", floors: [
+                [479, 9, 0], [615, 10, 0], [684, 12, 0], [752, 14, 0], [820, 16, 0],
+                [900, 18, 0], [980, 20, 0], [1060, 23, 0], [1139, 25, 0], [1253, 26, 0],
+                [1424, 27, 0], [1652, 28, 0], [1937, 29, 0]
+            ] },
+            { file: "en0121.epd", name: "Lexaeus", floors: [
+                [515, 5, 466], [663, 6, 1080], [736, 7, 1732], [810, 8, 2379], [884, 9, 3030],
+                [970, 11, 3677], [1055, 12, 4329], [1141, 13, 4976], [1227, 14, 5628], [1350, 15, 6517],
+                [1534, 16, 7448], [1780, 16, 8379], [2086, 17, 9310]
+            ] },
+            { file: "en0122_2.epd", name: "Ansem", floors: [
+                [516, 9, 0], [663, 10, 0], [737, 13, 0], [810, 15, 0], [884, 17, 0],
+                [970, 20, 0], [1056, 22, 0], [1142, 24, 0], [1228, 27, 0], [1350, 28, 0],
+                [1534, 29, 0], [1780, 30, 0], [1780, 30, 0]
+            ] },
+            { file: "en0124.epd", name: "Zexion", floors: [
+                [428, 4, 484], [550, 5, 1124], [611, 6, 1802], [672, 7, 2475], [733, 8, 3153],
+                [804, 9, 3826], [876, 10, 4504], [947, 11, 5177], [1018, 12, 5855], [1120, 12, 6780],
+                [1273, 13, 7749], [1476, 13, 8717], [1731, 14, 9686]
+            ] }
+        ];
         var STAT_BOSS_KINDS = [102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 124, 132];
         var LAST_HEARTLESS_KIND = 36;
 
@@ -2544,6 +2693,7 @@
                 enemyDecks: getValue("enemy-deck-mode") === "yes",
                 deckLowest: readNumber("deck-lowest"),
                 deckHighest: readNumber("deck-highest"),
+                scaleBosses: getValue("boss-scale-mode") === "yes",
                 statHp: readNumber("stat-hp"),
                 statAttack: readNumber("stat-attack"),
                 statExp: readNumber("stat-exp"),
@@ -2795,6 +2945,22 @@
 
         function getChangePercent(nextRandom, largestChange) {
             return (100 + randomWholeNumber(nextRandom, -largestChange, largestChange)) / 100;
+        }
+
+        function buildBossScaling(settings, levers, spoiler) {
+            if (!settings.scaleBosses) {
+                return;
+            }
+            spoiler.push("Boss stats scale with the floor (HP / attack / EXP on floors 1, 7 and 13)");
+            levers.boss_floor_stats = SCALED_BOSS_STATS.map(function (boss) {
+                var texts = [boss.floors[0], boss.floors[6], boss.floors[12]].map(function (row) { return row.join(" / "); });
+                spoiler.push("  " + boss.name + ": " + texts.join(", "));
+                var floors = boss.floors.map(function (row) {
+                    return { hp: row[0], attack: row[1], exp: row[2] };
+                });
+                return { file: boss.file, floors: floors };
+            });
+            spoiler.push("");
         }
 
         function buildEnemyStats(settings, levers, spoiler) {
@@ -3482,6 +3648,7 @@
             buildStoryDoors(settings, levers, spoiler);
             buildEnemySwaps(settings, levers, spoiler);
             buildBossFights(settings, levers, spoiler, bossSetup);
+            buildBossScaling(settings, levers, spoiler);
             buildEnemyStats(settings, levers, spoiler);
             buildEnemyDecks(settings, levers, spoiler);
             buildCardPool(settings, levers, spoiler, bossSetup);
