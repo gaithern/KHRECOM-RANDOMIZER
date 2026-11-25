@@ -83,6 +83,8 @@ How the page builds a seed:
   for 99 copies of a card are not changed.
 - With a world order, the levers script gives Donald and Goofy in every world but Traverse Town on floors 1 to 10. They leave on floor 11 like always.
 - High Jump, Glide and Superglide work exactly while Sora has their sleight, so they can be shuffled like the others.
+- Boss randomization is turned off in the generator (`IS_BOSS_RANDOMIZER_READY`): swapped bosses break gimmick cards and can
+  soft lock the scene after the fight. The `boss_fights` lever itself still works.
 - Boss stats can be scaled: a boss keeps the game's numbers on its normal floors, and other floors follow a curve from the nearest
   of them.
 - The starting deck has 13 cards, at least one attack card, and stays under 275 CP with the seed's own card CP.

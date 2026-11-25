@@ -241,25 +241,27 @@
                 <option value="yes" selected>Yes</option>
             </select>
         </div>
-        <div class="row">
-            <label for="boss-mode">Randomize bosses</label>
-            <select id="boss-mode">
-                <option value="no">No</option>
-                <option value="yes">Yes</option>
-                <option value="riku" selected>Yes (include Riku bosses)</option>
-            </select>
+        <div hidden>
+            <div class="row">
+                <label for="boss-mode">Randomize bosses</label>
+                <select id="boss-mode">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                    <option value="riku">Yes (include Riku bosses)</option>
+                </select>
+            </div>
+            <div class="row" data-shown-with="boss-mode" data-shown-for="yes riku">
+                <label for="boss-scope">Which bosses</label>
+                <select id="boss-scope">
+                    <option value="all">All bosses</option>
+                    <option value="human">Only human-sized bosses</option>
+                </select>
+            </div>
+            <p class="help" data-shown-with="boss-mode" data-shown-for="yes riku">
+                Every boss brings its own reward. Riku's bosses are Lexaeus, Zexion and Ansem. This is experimental: big bosses were
+                made for their own arena and may look wrong, get stuck or crash. Keep the spoiler log to see which boss was where.
+            </p>
         </div>
-        <div class="row" data-shown-with="boss-mode" data-shown-for="yes riku">
-            <label for="boss-scope">Which bosses</label>
-            <select id="boss-scope">
-                <option value="all">All bosses</option>
-                <option value="human">Only human-sized bosses</option>
-            </select>
-        </div>
-        <p class="help" data-shown-with="boss-mode" data-shown-for="yes riku">
-            Every boss brings its own reward. Riku's bosses are Lexaeus, Zexion and Ansem. This is experimental: big bosses were
-            made for their own arena and may look wrong, get stuck or crash. Keep the spoiler log to see which boss was where.
-        </p>
         <div class="row">
             <label for="enemy-drop-mode">Randomize enemy drops</label>
             <select id="enemy-drop-mode">
@@ -2292,6 +2294,7 @@
             spoiler.push("");
         }
 
+        var IS_BOSS_RANDOMIZER_READY = false;
         var STARTING_DECK_SIZE = 13;
         var STARTING_CP = 275;
         var CURE_CARD = 29;
@@ -2679,6 +2682,13 @@
             return getElement(id).value;
         }
 
+        function readBossMode() {
+            if (!IS_BOSS_RANDOMIZER_READY) {
+                return "no";
+            }
+            return getValue("boss-mode");
+        }
+
         function readSettings() {
             return {
                 seed: getValue("seed").trim(),
@@ -2687,7 +2697,7 @@
                 floorMode: getValue("floor-mode"),
                 floorLayoutMode: getValue("floor-layout-mode"),
                 heartless: getValue("heartless-mode") === "yes",
-                bossMode: getValue("boss-mode"),
+                bossMode: readBossMode(),
                 bossScope: getValue("boss-scope"),
                 enemyDropMode: getValue("enemy-drop-mode"),
                 enemyDecks: getValue("enemy-deck-mode") === "yes",
